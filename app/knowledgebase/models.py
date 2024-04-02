@@ -1,0 +1,46 @@
+from typing import List, Optional
+from sqlalchemy import String, ForeignKey, event
+from sqlalchemy.orm import Mapped, mapped_column, relationship, mapper
+from sqlalchemy.schema import Index
+from datetime import datetime
+from knowledgebase.database import Base
+
+class KnowledgeBase(Base):
+    __tablename__="knowledge_base"
+    id: Mapped[int] = mapped_column(primary_key = True, autoincrement = True)
+    name: Mapped[str] = mapped_column(String(255))
+    embedding:Mapped[str] = mapped_column(String(30))
+    description:Mapped[Optional[str]] = mapped_column(String(255))
+    created: Mapped[datetime] = mapped_column(default=datetime.now)
+    updated: Mapped[datetime] = mapped_column(default=datetime.now,onupdate=datetime.now)
+    files: Mapped[List["KnowledgeBaseFile"]] = relationship(cascade="all, delete-orphan")
+    collection_name: Mapped[Optional[str]] = mapped_column(String(255), default= None)
+
+    def __repr__(self) -> str:
+        return f"KnowledgeBase(id={self.id!r}, name={self.name!r}, \
+            embedding={self.embedding!r}, created={self.created!r}, \
+            updated={self.updated!r}, collection_name={self.collection_name!r})"
+
+
+class KnowledgeBaseFile(Base):
+    __tablename__="knowledge_base_file"
+    id: Mapped[int] = mapped_column(primary_key = True, autoincrement = True)
+    kb_id:Mapped[int] = mapped_column(ForeignKey("knowledge_base.id"), index=True)
+    file_name:Mapped[str] = mapped_column(String(255))
+    created: Mapped[datetime] = mapped_column(default=datetime.now)
+    updated: Mapped[datetime] = mapped_column(default=datetime.now,onupdate=datetime.now)
+
+    def __repr__(self) -> str:
+        return f"KnowledgeBaseFile(id={self.id!r}, file_name={self.file_name!r}, kb_id={self.kb_id!r})"
+    
+Index("files_by_kb_id", KnowledgeBaseFile.kb_id)
+
+@event.listens_for(KnowledgeBase, 'after_insert')
+def receive_after_insert(mapper, connection, target):
+    target.collection_name = f"collection_{target.id}"
+    connection.execute(
+        KnowledgeBase.__table__.update().
+        where(KnowledgeBase.id == target.id).
+        values(collection_name = target.collection_name)
+    )
+
