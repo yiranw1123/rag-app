@@ -1,31 +1,39 @@
-from sqlalchemy.orm import Session
 from .. import models, schemas
 from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
-def get_all(db: Session):
-    knowledge_bases = db.query(models.KnowledgeBase).all()
-    return knowledge_bases
+async def get_all(db: AsyncSession):
+    stmt = select(models.KnowledgeBase)
+    results= await db.execute(stmt)
+    kbs = results.scalars().all()
+    return kbs
 
-def get_by_id(id: int, db: Session):
-    kb = db.query(models.KnowledgeBase).filter(models.KnowledgeBase.id == id).first()
+async def get_by_id(id: int, db: AsyncSession):
+    stmt = select(models.KnowledgeBase).where(models.KnowledgeBase.id == id)
+    result = await db.execute(stmt)
+    kb = result.scalars().first()
     if not kb:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
                              detail = f"KnowledgeBase with the id {id} is not found.")
     return kb
 
-def create(reqeust: schemas.CreateKnowledgeBase, db: Session):
+async def create(reqeust: schemas.CreateKnowledgeBase, db: AsyncSession):
     kb = models.KnowledgeBase(name = reqeust.knowledgebase_name, description=reqeust.description, \
                                embedding = "embed func", collection_name=None)
     db.add(kb)
-    db.commit()
+    await db.commit()
+    await db.refresh(kb)
     return kb.id
 
 
-def delete(id: int, db:Session):
-    kb = db.query(models.KnowledgeBase).filter(models.KnowledgeBase.id == id).first()
+async def delete(id: int, db:AsyncSession):
+    stmt = select(models.KnowledgeBase).where(models.KnowledgeBase.id == id)
+    result = await db.execute(stmt)
+    kb = result.scalars().first()
     if not kb:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND,
                             detail= f"KnowledgeBase with id {id} is not found")
-    db.delete(kb)
-    db.commit()
-    return 'done'
+    else:
+        await db.delete(kb)
+        await db.commit()

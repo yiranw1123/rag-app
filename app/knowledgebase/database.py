@@ -1,17 +1,16 @@
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "mysql+mysqlconnector://root:123@localhost/kbase"
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine, autocommit = False, autoflush= False)
-connection = engine.connect()
+SQLALCHEMY_DATABASE_URL = "mysql+aiomysql://root:123@localhost/kbase"
+engine = create_async_engine(SQLALCHEMY_DATABASE_URL, echo=True, future=True)
+SessionLocal = async_sessionmaker(bind=engine)
 
 Base = declarative_base()
 
-def get_db():
+async def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
-        db.close()
+        await db.close()

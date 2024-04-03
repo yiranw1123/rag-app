@@ -1,6 +1,6 @@
 from typing import List, Optional
 from sqlalchemy import String, ForeignKey, event
-from sqlalchemy.orm import Mapped, mapped_column, relationship, mapper
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.schema import Index
 from datetime import datetime
 from knowledgebase.database import Base
@@ -13,7 +13,7 @@ class KnowledgeBase(Base):
     description:Mapped[Optional[str]] = mapped_column(String(255))
     created: Mapped[datetime] = mapped_column(default=datetime.now)
     updated: Mapped[datetime] = mapped_column(default=datetime.now,onupdate=datetime.now)
-    files: Mapped[List["KnowledgeBaseFile"]] = relationship(cascade="all, delete-orphan")
+    files: Mapped[List["KnowledgeBaseFile"]] = relationship(cascade="all, delete-orphan", lazy = "selectin")
     collection_name: Mapped[Optional[str]] = mapped_column(String(255), default= None)
 
     def __repr__(self) -> str:
@@ -34,13 +34,3 @@ class KnowledgeBaseFile(Base):
         return f"KnowledgeBaseFile(id={self.id!r}, file_name={self.file_name!r}, kb_id={self.kb_id!r})"
     
 Index("files_by_kb_id", KnowledgeBaseFile.kb_id)
-
-@event.listens_for(KnowledgeBase, 'after_insert')
-def receive_after_insert(mapper, connection, target):
-    target.collection_name = f"collection_{target.id}"
-    connection.execute(
-        KnowledgeBase.__table__.update().
-        where(KnowledgeBase.id == target.id).
-        values(collection_name = target.collection_name)
-    )
-
