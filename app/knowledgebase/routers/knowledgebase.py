@@ -3,11 +3,9 @@ from .. import database, schemas
 from ..repository import knowledgebase
 from typing import List
 from . import knowledgebasefile
-from app.llm.process_file import process_pdf_and_summarize_elements
 import os
 from ..save_file import save_file
 from ..constants import UPLOADED_FILES_DIR
-from app.llm.vectorstore import add_to_collection
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/knowledgebase", tags=['knowledgebase'])

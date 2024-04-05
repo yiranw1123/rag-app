@@ -1,0 +1,17 @@
+
+
+#formContainer {
+    position: relative; /* Can also be 'relative', 'fixed', or 'sticky' */
+    top: 500; /* Distance from the top */
+    left: 50px; /* Distance from the left */
+    margin: 10px; /* Outer space around the element */
+  }
+
+
+  #tableContainer {
+    position: relative; /* Can also be 'relative', 'fixed', or 'sticky' */
+    top: 500; /* Distance from the top */
+    left: 50px; /* Distance from the left */
+    width: 1000px;
+    height:400px;
+  }
