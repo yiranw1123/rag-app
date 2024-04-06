@@ -1,0 +1,69 @@
+.table {
+    border-collapse: collapse;
+    border: none;
+    width: 85vw;
+  }
+  
+  .tableRowHeader {
+    background-color: transparent;
+    transition: all 0.25s ease;
+    border-radius: 10px;
+  }
+  
+  .tableHeader {
+    background-color: #f1f1f1;
+    padding: 12px;
+    font-weight: 500;
+    text-align: left;
+    font-size: 14px;
+    color: #2c3e50;
+  }
+  
+  .tableHeader:first-child {
+    border-top-left-radius: 15px;
+  }
+  
+  .tableHeader:last-child {
+    border-top-right-radius: 15px;
+  }
+  
+  .tableRowItems {
+    cursor: auto;
+  }
+  
+  .tableRowItems:nth-child(odd) {
+    background-color: #f9f9f9;
+  }
+  
+  .tableCell {
+    padding: 12px;
+    font-size: 14px;
+    color: grey;
+  }
+
+  .actionButton{
+    background-color: #f9f9f9;
+    color: #2c3e50;
+    margin: 0 4px;
+    border-radius:10px;
+    border: none;
+    padding: 10px;
+  }
+
+  .viewButton {
+    background-color: #a4c7a5; /* Green */
+  }
+  
+  .deleteButton {
+    background-color: #e2eccd; /* Red */
+  }
+  
+  .chatButton {
+    background-color: #a5d5e5; /* Blue */
+  }
+
+  .buttonContainer {
+    display: flex;
+    justify-content: center; /* Centers buttons horizontally */
+    align-items: center; /* Aligns buttons vertically in case the cell's height is larger than the buttons' height */
+  }

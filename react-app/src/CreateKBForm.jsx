@@ -1,7 +1,7 @@
 import React, { useRef, useState} from 'react';
 import api from './api';
 
-const FileUploader = ({onFormSubmit})=> {
+const CreateKBForm = ({onFormSubmit})=> {
   const initialForm = {
     knowledgebase_name:"",
     description:""
@@ -65,14 +65,15 @@ const FileUploader = ({onFormSubmit})=> {
     } catch (error) {
       console.error("Error uploading files: ", error);
       throw error;
+    } finally{
+      // reset the form to empty for next req
+      setForm(initialForm);
+      if(fileInputRef.current){
+        fileInputRef.current.value = '';
+      }
+      onFormSubmit();
     };
 
-    // reset the form to empty for next req
-    setForm(initialForm);
-    if(fileInputRef.current){
-      fileInputRef.current.value = '';
-    }
-    onFormSubmit();
     
   }
 
@@ -107,4 +108,4 @@ const FileUploader = ({onFormSubmit})=> {
   );
 }
 
-export default FileUploader;
+export default CreateKBForm;

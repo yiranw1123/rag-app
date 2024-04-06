@@ -1,10 +1,12 @@
 import React, {useState, useEffect} from 'react'
-import './../node_modules/bootstrap/dist/css/bootstrap.min.css'
 import api from './api'
-import FileUploader from './FileUploader'
+import CreateKBForm from './CreateKBForm'
+import styles from "./App.module.css";
+import Table from './components/table'
 
 const App = () => {
   const [knowledgebase, setKnowledgebase] = useState([]);
+  const [selectedKB, setSelectedKB]= useState("");
 
   const fetchKnowledgebase = async() =>{
     const response = await api.get('/knowledgebase/');
@@ -17,35 +19,25 @@ const App = () => {
 
   return (
     <div>
-      <nav className='navbar navbar-dark bg-primary'>
+      <nav className='navbar navbar-dark bg-primary custom-navbar'>
         <div className='container-fluid'>
           <a className='navbar-brand' href='#'>
             KnowledgeBase
           </a>
         </div>
       </nav>
-      <div className='container'><FileUploader onFormSubmit={fetchKnowledgebase}/></div>
-      <table className='table table-striped table-bordered table-hover' id='tableContainer'>
-        <thead>
-          <tr>
-            <th>name</th>
-            <th>id</th>
-            <th>embedding</th>
-            <th>created</th>
-            <th>updated</th>
-          </tr>
-        </thead>
-        <tbody>
-          {knowledgebase.map((knowledgebase) => (
-            <tr key={knowledgebase.id}>
-              <td>{knowledgebase.name}</td>
-              <td>{knowledgebase.embedding}</td>
-              <td>{knowledgebase.created}</td>
-              <td>{knowledgebase.updated}</td>
-            </tr>
+      <div className={styles.container}><CreateKBForm onFormSubmit={fetchKnowledgebase}/></div>
+      <div className={styles.container}>
+        <select onChange={(e) => setSelectedKB(e.target.value)} value={selectedKB} id='kb-dropdown'>
+          <option value="">Select a Knowledgebase</option>
+          {knowledgebase.map((kb) => (
+            <option key={kb.id} value={kb.id}>{kb.name}</option>
           ))}
-        </tbody>
-      </table>
+        </select>
+      </div>
+      <div className={styles.container}>
+        <Table data={knowledgebase} rowsPerPage={5}></Table>
+      </div>
     </div>
   )
 };
