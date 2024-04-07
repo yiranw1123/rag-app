@@ -3,10 +3,10 @@ import api from './api'
 import CreateKBForm from './CreateKBForm'
 import styles from "./App.module.css";
 import Table from './components/table'
+import UploadFileForm from './UploadFileForm';
 
 const App = () => {
   const [knowledgebase, setKnowledgebase] = useState([]);
-  const [selectedKB, setSelectedKB]= useState("");
 
   const fetchKnowledgebase = async() =>{
     const response = await api.get('/knowledgebase/');
@@ -18,26 +18,34 @@ const App = () => {
   }, []);
 
   return (
-    <div>
-      <nav className='navbar navbar-dark bg-primary custom-navbar'>
-        <div className='container-fluid'>
-          <a className='navbar-brand' href='#'>
-            KnowledgeBase
-          </a>
+    <div className={styles.gridContainer}>
+      <header>
+        <h1> KnowledgeBase</h1>
+      </header>
+
+      <aside className={styles.aside}>
+        <div className={styles.asideCloseIcon}>
+          <strong>&times;</strong>
         </div>
-      </nav>
-      <div className={styles.container}><CreateKBForm onFormSubmit={fetchKnowledgebase}/></div>
-      <div className={styles.container}>
-        <select onChange={(e) => setSelectedKB(e.target.value)} value={selectedKB} id='kb-dropdown'>
-          <option value="">Select a Knowledgebase</option>
-          {knowledgebase.map((kb) => (
-            <option key={kb.id} value={kb.id}>{kb.name}</option>
-          ))}
-        </select>
-      </div>
-      <div className={styles.container}>
-        <Table data={knowledgebase} rowsPerPage={5}></Table>
-      </div>
+        <ul className={styles.asideList}>
+          <li className={styles.asideListItem}>KnowledgeBase</li>
+          <li className={styles.asideListItem}>Chat</li>
+        </ul>
+      </aside>
+
+      <main className={styles.main}>
+        <div className={styles.upperMain}>
+          <div className={styles.mainCreateForm}><CreateKBForm/></div>
+          <div className={styles.mainUploadForm}><UploadFileForm data={knowledgebase}/></div>
+        </div>
+        <div className={styles.mainKbtable}>
+          <Table data={knowledgebase} rowsPerPage={5}></Table>
+        </div>
+      </main>
+      <footer className={styles.footer}>
+        <div className="footer_copyright">&copy;2024</div>
+        <div className="footer_byline">Made with &hearts;</div>
+      </footer>
     </div>
   )
 };

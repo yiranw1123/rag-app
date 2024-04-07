@@ -78,9 +78,9 @@ const CreateKBForm = ({onFormSubmit})=> {
   }
 
   return (
-    <div className="file-upload">
+    <div className="create-kb-form">
       <form onSubmit={handleMultipleSubmit}>
-        <h1>Create a new Knowledgebase</h1>
+        <h2>Create Knowledgebase</h2>
         <div className='mb-3'>
           <label htmlFor='knowledgebase_name' className='form-label'>
             KnowledgeBase Name
@@ -102,7 +102,7 @@ const CreateKBForm = ({onFormSubmit})=> {
           <input type='file' className='form-control' id='fupload' name='fupload' onChange={handleMultipleChange} multiple ref={fileInputRef}></input>
         </div>
 
-        <button type="submit" className='btn btn-primary'>Upload</button>
+        <button type="submit" className='btn btn-primary'>Create</button>
       </form>
     </div>
   );
