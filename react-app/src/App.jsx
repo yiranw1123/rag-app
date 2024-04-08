@@ -19,24 +19,13 @@ const App = () => {
 
   return (
     <div className={styles.gridContainer}>
-      <header>
+      <header className={styles.header}>
         <h1> KnowledgeBase</h1>
       </header>
-
-      <aside className={styles.aside}>
-        <div className={styles.asideCloseIcon}>
-          <strong>&times;</strong>
-        </div>
-        <ul className={styles.asideList}>
-          <li className={styles.asideListItem}>KnowledgeBase</li>
-          <li className={styles.asideListItem}>Chat</li>
-        </ul>
-      </aside>
-
       <main className={styles.main}>
         <div className={styles.upperMain}>
-          <div className={styles.mainCreateForm}><CreateKBForm/></div>
-          <div className={styles.mainUploadForm}><UploadFileForm data={knowledgebase}/></div>
+          <div className={styles.mainCreateForm}><CreateKBForm onFormSubmit={fetchKnowledgebase}/></div>
+          <div className={styles.mainUploadForm}><UploadFileForm data={knowledgebase} onFormSubmit={fetchKnowledgebase}/></div>
         </div>
         <div className={styles.mainKbtable}>
           <Table data={knowledgebase} rowsPerPage={5}></Table>

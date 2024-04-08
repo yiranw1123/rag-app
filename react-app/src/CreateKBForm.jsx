@@ -73,8 +73,6 @@ const CreateKBForm = ({onFormSubmit})=> {
       }
       onFormSubmit();
     };
-
-    
   }
 
   return (
