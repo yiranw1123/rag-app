@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
-import api from './api';
-import styles from "./App.module.css";
+import api from '../api';
+import styles from "../App.module.css";
 
 const UploadFileForm = ({data, onFormSubmit}) => {
   const [selectedKB, setSelectedKB] = useState("");
@@ -48,7 +48,7 @@ const UploadFileForm = ({data, onFormSubmit}) => {
       if(fileInputRef.current){
         fileInputRef.current.value = '';
       }
-      onFormSubmit();
+      onFormSubmit(kbId);
       resetSelection();
     };
   }

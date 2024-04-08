@@ -1,10 +1,10 @@
 import React, {useState, useEffect} from 'react'
 import api from './api'
-import CreateKBForm from './CreateKBForm'
+import CreateKBForm from './components/createkbform'
 import styles from "./App.module.css";
-import KBTable from './components/KBTable'
-import UploadFileForm from './UploadFileForm';
-import DetailsTable from './components/DetailsTable';
+import KBTable from './components/kbtable'
+import UploadFileForm from './components/uploadfileform';
+import DetailsTable from './components/detailstable';
 
 const App = () => {
   const [knowledgebase, setKnowledgebase] = useState([]);
@@ -68,7 +68,7 @@ const App = () => {
       <main className={styles.main}>
         <div className={styles.upperMain}>
           <div className={styles.mainCreateForm}><CreateKBForm onFormSubmit={fetchKnowledgebase}/></div>
-          <div className={styles.mainUploadForm}><UploadFileForm data={knowledgebase} onFormSubmit={fetchKnowledgebase}/></div>
+          <div className={styles.mainUploadForm}><UploadFileForm data={knowledgebase} onFormSubmit={fetchFiles}/></div>
         </div>
         <div className={styles.mainKbtable}>
           {!showDetails ? (

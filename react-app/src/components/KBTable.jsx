@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 
 import useTable from '../hooks/useTable';
-import TableFooter from "./TableFooter/tablefooter";
+import TableFooter from "./tablefooter";
 import styles from "./Table.module.css";
 
 const KBTable = ({data, rowsPerPage, onView, onDelete}) => {

@@ -1,5 +1,5 @@
 import React, { useRef, useState} from 'react';
-import api from './api';
+import api from '../api';
 
 const CreateKBForm = ({onFormSubmit})=> {
   const initialForm = {

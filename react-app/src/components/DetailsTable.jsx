@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from "react";
 
 import useTable from '../hooks/useTable';
-import TableFooter from "./TableFooter/tablefooter";
+import TableFooter from "./tablefooter";
 import styles from "./Table.module.css";
 
 const DetailsTable = ({data, rowsPerPage, kbId, onDelete, onBack}) => {
