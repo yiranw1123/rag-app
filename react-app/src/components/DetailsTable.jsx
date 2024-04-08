@@ -4,7 +4,7 @@ import useTable from '../hooks/useTable';
 import TableFooter from "./TableFooter/tablefooter";
 import styles from "./Table.module.css";
 
-const DetailsTable = ({data, rowsPerPage, kbId, onBack}) => {
+const DetailsTable = ({data, rowsPerPage, kbId, onDelete, onBack}) => {
 
   const [page, setPage] = useState(1);
   const {slice, range} = useTable(data, page, rowsPerPage);
@@ -25,11 +25,11 @@ const DetailsTable = ({data, rowsPerPage, kbId, onBack}) => {
         {slice.map((file) => (
           <tr key={file.id} className={styles.tableRowHeader}>
             <td className={styles.tableCell}>{file.id}</td>
-            <td className={styles.tableCell}>{file.name}</td>
+            <td className={styles.tableCell}>{file.file_name}</td>
             <td className={styles.tableCell}>{file.created}</td>
             <td className={styles.tableCell}>{file.updated}</td>
             <td className={`${styles.tableCell} ${styles.buttonContainer}`}>
-              <button className={`${styles.actionButton} ${styles.deleteButton}`}> Delete</button>
+              <button className={`${styles.actionButton} ${styles.deleteButton}`} onClick={() => onDelete(file.id, kbId)}> Delete</button>
             </td>
           </tr>
         ))}

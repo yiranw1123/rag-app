@@ -46,6 +46,20 @@ const App = () => {
     }
   };
 
+  const handleFileDelete = async(fileId, kbId) => {
+    try{
+      console.log(fileId);
+      await api.delete(`/knowledgebasefile/${fileId}`);
+    }catch (error) {
+      console.error("Error deleting file:", error);
+    }
+    try{
+      await fetchFiles(kbId);
+    }catch (error) {
+      console.error("Error fetching files:", error);
+    }
+  };
+
   return (
     <div className={styles.gridContainer}>
       <header className={styles.header}>
@@ -53,14 +67,14 @@ const App = () => {
       </header>
       <main className={styles.main}>
         <div className={styles.upperMain}>
-          <div className={styles.mainCreateForm}><CreateKBForm onFormSubmit={fetchKnowledgebase} onView={handleView} onDelete={handleDelete}/></div>
+          <div className={styles.mainCreateForm}><CreateKBForm onFormSubmit={fetchKnowledgebase}/></div>
           <div className={styles.mainUploadForm}><UploadFileForm data={knowledgebase} onFormSubmit={fetchKnowledgebase}/></div>
         </div>
         <div className={styles.mainKbtable}>
           {!showDetails ? (
             <KBTable data={knowledgebase} rowsPerPage={5} onView={handleView} onDelete={handleDelete}></KBTable>
           ) : (
-            <DetailsTable data={files} rowsPerPage={5} kbId={selectedKB} onBack={() => setShowDetails(false)}></DetailsTable>
+            <DetailsTable data={files} rowsPerPage={5} kbId={selectedKB}  onDelete={handleFileDelete} onBack={() => setShowDetails(false)}></DetailsTable>
           )}
         </div>
       </main>
