@@ -68,13 +68,13 @@ const App = () => {
       <main className={styles.main}>
         <div className={styles.upperMain}>
           <div className={styles.mainCreateForm}><CreateKBForm onFormSubmit={fetchKnowledgebase}/></div>
-          <div className={styles.mainUploadForm}><UploadFileForm data={knowledgebase} onFormSubmit={fetchFiles}/></div>
+          <div className={styles.mainUploadForm}><UploadFileForm data={knowledgebase} onFormSubmit={fetchFiles} jumpToDetails={handleView}/></div>
         </div>
-        <div className={styles.mainKbtable}>
+        <div className={styles.tableDisplay}>
           {!showDetails ? (
-            <KBTable data={knowledgebase} rowsPerPage={5} onView={handleView} onDelete={handleDelete}></KBTable>
+            <KBTable data={knowledgebase} rowsPerPage={10} onView={handleView} onDelete={handleDelete}></KBTable>
           ) : (
-            <DetailsTable data={files} rowsPerPage={5} kbId={selectedKB}  onDelete={handleFileDelete} onBack={() => setShowDetails(false)}></DetailsTable>
+            <DetailsTable data={files} rowsPerPage={10} kbId={selectedKB}  onDelete={handleFileDelete} onBack={() => setShowDetails(false)}></DetailsTable>
           )}
         </div>
       </main>

@@ -11,6 +11,7 @@ const DetailsTable = ({data, rowsPerPage, kbId, onDelete, onBack}) => {
   
   return(
     <>
+    <h2>All files for KnowldegeBase with id: {kbId}</h2>
     <table className={styles.table}>
       <thead className={styles.tableRowHeader}>
         <tr>

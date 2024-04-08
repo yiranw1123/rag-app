@@ -71,12 +71,12 @@ const CreateKBForm = ({onFormSubmit})=> {
       if(fileInputRef.current){
         fileInputRef.current.value = '';
       }
-      onFormSubmit();
+      onFormSubmit(kbId);
     };
   }
 
   return (
-    <div className="create-kb-form">
+    <div className={'create-kb-form'}>
       <form onSubmit={handleMultipleSubmit}>
         <h2>Create Knowledgebase</h2>
         <div className='mb-3'>

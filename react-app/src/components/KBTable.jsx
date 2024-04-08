@@ -15,7 +15,7 @@ const KBTable = ({data, rowsPerPage, onView, onDelete}) => {
           <tr>
             <th className={styles.tableHeader}>Id</th>
             <th className={styles.tableHeader}>Name</th>
-            <th className={styles.tableHeader}>Embed Func</th>
+            <th className={styles.tableHeader}>Embedding</th>
             <th className={styles.tableHeader}>Created</th>
             <th className={styles.tableHeader}>Last Updated</th>
             <th className={styles.tableHeader}>Actions</th>

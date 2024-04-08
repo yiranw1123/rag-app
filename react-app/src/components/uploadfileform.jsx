@@ -1,8 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import api from '../api';
-import styles from "../App.module.css";
 
-const UploadFileForm = ({data, onFormSubmit}) => {
+const UploadFileForm = ({data, onFormSubmit, jumpToDetails}) => {
   const [selectedKB, setSelectedKB] = useState("");
   const [files, setFiles] = useState([]);
   const fileInputRef = useRef();
@@ -48,12 +47,12 @@ const UploadFileForm = ({data, onFormSubmit}) => {
       if(fileInputRef.current){
         fileInputRef.current.value = '';
       }
-      onFormSubmit(kbId);
       resetSelection();
+      await onFormSubmit(kbId);
     };
   }
   return(
-    <div className="upload-file-form">
+    <div className={'upload-form'}>
       <form onSubmit={handleMultipleSubmit}>
         <h2>File Upload</h2>
         <label htmlFor="kb-dropdown">KnowledgeBase</label>
@@ -69,7 +68,8 @@ const UploadFileForm = ({data, onFormSubmit}) => {
           </label>
           <input type='file' className='form-control' id='fupload' name='fupload' onChange={handleMultipleChange} multiple ref={fileInputRef}></input>
         </div>
-        <button type="submit" className='btn btn-primary'>Upload</button>
+        <button type="submit" className='btn btn-primary' onClick={() => jumpToDetails(document.getElementById("kb-dropdown").value)}>Upload</button>
+
       </form>
     </div>
   );
