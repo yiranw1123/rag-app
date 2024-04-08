@@ -6,17 +6,6 @@ body {
   font-family: monospace;
   font-size: 15px;
 }
-/* .grid-container {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 50px 1fr 50px;
-
-  grid-template-areas:
-    'header'
-    'main'
-    'footer';
-  height: 100vh;
-} */
 
 .upperMain{
   padding: 50px;
@@ -34,6 +23,7 @@ body {
   grid-area: main;
   background-color: white;
   justify-content: center;
+  padding-bottom: 100px;
 }
 
 .header {
@@ -55,36 +45,3 @@ body {
   color: rgb(52, 52, 88);
   padding: 0 5px;
 }
-
-/* .main-create-form {
-  flex-basis: 250px;
-  flex-grow: 1;
-  margin: 10px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px;
-  height: 50vh;
-  border: 1px solid darkblue;
-  border-radius: 4px;
-  color: darkblue;
-} */
-
-/* Layout for main-cards section // below main_overview */
-/* .main-kbtable {
-  display: flex;
-  margin-top: 50px;
-} */
-/* responsive layout */
-/* @media only screen and (min-width: 750px) {
-  .grid-container {
-    display: grid;
-    grid-template-columns: 240px 1fr;
-    grid-template-rows: 50px 1fr 50px;
-    grid-template-areas:
-      'header header'
-      'main'
-      'footer footer';
-    height: 100vh;
-  }
-} */
