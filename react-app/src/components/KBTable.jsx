@@ -16,6 +16,7 @@ const KBTable = ({data, rowsPerPage, onView, onDelete}) => {
             <th className={styles.tableHeader}>Id</th>
             <th className={styles.tableHeader}>Name</th>
             <th className={styles.tableHeader}>Embedding</th>
+            <th className={styles.tableHeader}>Description</th>
             <th className={styles.tableHeader}>Created</th>
             <th className={styles.tableHeader}>Last Updated</th>
             <th className={styles.tableHeader}>Actions</th>
@@ -27,6 +28,7 @@ const KBTable = ({data, rowsPerPage, onView, onDelete}) => {
               <td className={styles.tableCell}>{knowledgebase.id}</td>
               <td className={styles.tableCell}>{knowledgebase.name}</td>
               <td className={styles.tableCell}>{knowledgebase.embedding}</td>
+              <td className={styles.tableCell}>{knowledgebase.description}</td>
               <td className={styles.tableCell}>{knowledgebase.created}</td>
               <td className={styles.tableCell}>{knowledgebase.updated}</td>
               <td className={`${styles.tableCell} ${styles.buttonContainer}`}>

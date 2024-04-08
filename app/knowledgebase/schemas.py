@@ -8,6 +8,7 @@ class ShowKnowledgeBase(BaseModel):
     embedding: str
     created: datetime
     updated: datetime
+    description: str
 
 class ShowKnowledgeBaseFile(BaseModel):
     id: int

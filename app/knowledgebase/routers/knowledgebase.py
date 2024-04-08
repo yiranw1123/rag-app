@@ -15,7 +15,7 @@ get_db = database.get_db
 @router.get('/', response_model=List[schemas.ShowKnowledgeBase])
 async def all(db: AsyncSession= Depends(get_db)):
     data= await knowledgebase.get_all(db)
-    return [schemas.ShowKnowledgeBase(id = kb.id, name=kb.name, embedding=kb.embedding, created=kb.created, updated=kb.updated) for kb in data]
+    return [schemas.ShowKnowledgeBase(id = kb.id, name=kb.name, embedding=kb.embedding, created=kb.created, updated=kb.updated, description=kb.description) for kb in data]
 
 @router.post('/{id}/upload/', status_code=status.HTTP_201_CREATED)
 async def upload_files(id: int, files:List[UploadFile] = File(...), db: AsyncSession= Depends(get_db)):
