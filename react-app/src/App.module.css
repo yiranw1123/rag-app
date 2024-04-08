@@ -33,7 +33,7 @@ body {
 
 .header {
   grid-area: header;
-  background-color: rgb(153, 173, 200);
+  background-color: rgb(55, 134, 238);
 }
 
 .footer {

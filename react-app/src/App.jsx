@@ -2,20 +2,49 @@ import React, {useState, useEffect} from 'react'
 import api from './api'
 import CreateKBForm from './CreateKBForm'
 import styles from "./App.module.css";
-import Table from './components/table'
+import KBTable from './components/KBTable'
 import UploadFileForm from './UploadFileForm';
+import DetailsTable from './components/DetailsTable';
 
 const App = () => {
   const [knowledgebase, setKnowledgebase] = useState([]);
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedKB, setSelectedKB] = useState('');
+  const [files, setFiles] = useState([]);
+
+  const fetchFiles = async(kbId) =>{
+    const response = await api.get(`/knowledgebase/${kbId}/files/`);
+    console.log("successuflly fetched files");
+    setFiles(response.data);
+  };
 
   const fetchKnowledgebase = async() =>{
     const response = await api.get('/knowledgebase/');
-    setKnowledgebase(response.data)
+    setKnowledgebase(response.data);
   };
 
   useEffect(() => {
     fetchKnowledgebase();
   }, []);
+
+  const handleView = (kbId) => {
+    setSelectedKB(kbId);
+    fetchFiles(kbId);
+    setShowDetails(true);
+  };
+
+  const handleDelete = async(kbId) => {
+    try{
+      await api.delete(`/knowledgebase/${kbId}`);
+    }catch (error) {
+      console.error("Error deleting KB:", error);
+    }
+    try{
+      await fetchKnowledgebase();
+    }catch (error) {
+      console.error("Error fetching kB data:", error);
+    }
+  };
 
   return (
     <div className={styles.gridContainer}>
@@ -24,11 +53,15 @@ const App = () => {
       </header>
       <main className={styles.main}>
         <div className={styles.upperMain}>
-          <div className={styles.mainCreateForm}><CreateKBForm onFormSubmit={fetchKnowledgebase}/></div>
+          <div className={styles.mainCreateForm}><CreateKBForm onFormSubmit={fetchKnowledgebase} onView={handleView} onDelete={handleDelete}/></div>
           <div className={styles.mainUploadForm}><UploadFileForm data={knowledgebase} onFormSubmit={fetchKnowledgebase}/></div>
         </div>
         <div className={styles.mainKbtable}>
-          <Table data={knowledgebase} rowsPerPage={5}></Table>
+          {!showDetails ? (
+            <KBTable data={knowledgebase} rowsPerPage={5} onView={handleView} onDelete={handleDelete}></KBTable>
+          ) : (
+            <DetailsTable data={files} rowsPerPage={5} kbId={selectedKB} onBack={() => setShowDetails(false)}></DetailsTable>
+          )}
         </div>
       </main>
       <footer className={styles.footer}>
