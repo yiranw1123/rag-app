@@ -3,9 +3,9 @@ from .. import database, schemas
 from ..repository import knowledgebase
 from typing import List
 from . import knowledgebasefile
-from ..llm.process_file import store_and_process_file
+from ..llm.api.fileprocesser import store_and_process_file
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..llm.summarizer import get_summarizer_chain
+from ..llm.api.summarizer import get_summarizer_chain
 
 router = APIRouter(prefix="/knowledgebase", tags=['knowledgebase'])
 
@@ -22,11 +22,10 @@ async def upload_files(id: int, files:List[UploadFile] = File(...), db: AsyncSes
     for file in files:
         file_name = file.filename
         # save file info to SQL
-        await knowledgebasefile.create(schemas.CreateKnowledgeBaseFile(kb_id=id, file_name=file_name), db)
+        file_id = await knowledgebasefile.create(schemas.CreateKnowledgeBaseFile(kb_id=id, file_name=file_name), db)
         # process file and save to backend
-        await store_and_process_file(file, summarize_chain)
+        await store_and_process_file(file, file_id, summarize_chain)
         print(f"Successfully processed {file_name}")
-
 
 @router.get('/{id}/files/', status_code=200, response_model=List[schemas.ShowKnowledgeBaseFile])
 async def get_by_knowledgebase_id(id: int, db: AsyncSession= Depends(get_db)):

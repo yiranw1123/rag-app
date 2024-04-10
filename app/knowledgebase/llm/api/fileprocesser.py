@@ -1,44 +1,56 @@
 from unstructured.partition.auto import partition_pdf
-from ..constants import IMG_DIRECTORY, UPLOADED_FILES_DIR
+from ...constants import IMG_DIRECTORY, UPLOADED_FILES_DIR
 import subprocess
-from ..schemas import Element
+from ...schemas import Element
 import glob
 import os
 from fastapi import UploadFile
+import uuid
 
 async def summarize_elements(elements, summarize_chain):
     # Apply to text
     texts = [i.text for i in elements]
     text_summaries = summarize_chain.batch(texts, {"max_concurrency": 5})
-    
+
     return text_summaries
 
-async def store_and_process_file(file:UploadFile, summarizer):
-    await save_file(file)
+async def store_and_process_file(file:UploadFile, file_id: uuid, summarizer):
+    stored_file_name = await save_file(file, file_id)
     print(f"Successfully saved file {file.filename} to local directory")
-    raw_pdf_elements = await get_raw_pdf_elements(filename=file.filename)
+    await clear_img_dir()
+    print("Cleared image directory for unstructured pdf parsing")
+    raw_pdf_elements = await get_raw_pdf_elements(filename=stored_file_name)
     table_elements, text_elements = await categorize_elements(raw_pdf_elements)
     print(f"File {file.filename} has {len(table_elements)} tables and {len(text_elements)} texts")
     text_summaries = await summarize_elements(text_elements, summarizer)
     table_summaries= await summarize_elements(table_elements, summarizer)
-    img_summaries = await summarize_imgs()
-    print(f"processed {len(text_summaries)} text summaries, {len(table_summaries)} table summaries, and {len(img_summaries)} img summaries")
+    if len(os.listdir(IMG_DIRECTORY)) != 0:
+        img_summaries = await summarize_imgs()
+        print(f"processed {len(img_summaries)} image summaries")
+    print(f"processed {len(text_summaries)} text summaries, {len(table_summaries)} table summaries")
 
-async def save_file(file:UploadFile):
+async def save_file(file:UploadFile, file_id: uuid):
     if not os.path.exists(UPLOADED_FILES_DIR):
         os.makedirs(UPLOADED_FILES_DIR)
     try:
         contents = file.file.read()
-        with open(UPLOADED_FILES_DIR+f'{file.filename}', 'wb') as f:
+        _, file_ext = os.path.splitext(file.filename)
+        stored_file_name = f"{file_id}{file_ext}"
+        with open(UPLOADED_FILES_DIR+stored_file_name, 'wb') as f:
             f.write(contents)
     except Exception:
         return {"message": "There was an error uploading the file"}
     finally:
         f.close()
         file.file.close()
-
+        return stored_file_name
+    
+async def clear_img_dir():
+    for file in os.listdir(IMG_DIRECTORY):
+        os.remove(f"{IMG_DIRECTORY}{file}")
+    
 async def get_raw_pdf_elements(filename):
-    print("received file {}".format(filename))
+    print("received file {}, ready to parse using unstructured".format(filename))
     return partition_pdf(
         filename=UPLOADED_FILES_DIR + filename,
         # Using pdf format to find embedded image blocks

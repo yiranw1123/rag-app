@@ -2,7 +2,6 @@
 
 # Define the directory containing the images
 IMG_DIR="./figures/"
-echo "Current directory: $(pwd)"
 
 # Loop through each image in the directory
 for img in "${IMG_DIR}"*.jpg; do

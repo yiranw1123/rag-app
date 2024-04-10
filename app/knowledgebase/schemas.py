@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,UUID4
 from datetime import datetime
 from typing import Any
 
@@ -11,7 +11,7 @@ class ShowKnowledgeBase(BaseModel):
     description: str
 
 class ShowKnowledgeBaseFile(BaseModel):
-    id: int
+    id: UUID4
     kb_id: int
     file_name: str
     created: datetime

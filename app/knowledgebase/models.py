@@ -1,9 +1,10 @@
 from typing import List, Optional
-from sqlalchemy import String, ForeignKey, event
+from sqlalchemy import String, ForeignKey, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.schema import Index
 from datetime import datetime
 from knowledgebase.database import Base
+import uuid
 
 class KnowledgeBase(Base):
     __tablename__="knowledge_base"
@@ -24,7 +25,7 @@ class KnowledgeBase(Base):
 
 class KnowledgeBaseFile(Base):
     __tablename__="knowledge_base_file"
-    id: Mapped[int] = mapped_column(primary_key = True, autoincrement = True)
+    id: Mapped[Uuid] = mapped_column(Uuid, primary_key=True ,default=uuid.uuid4)
     kb_id:Mapped[int] = mapped_column(ForeignKey("knowledge_base.id"), index=True)
     file_name:Mapped[str] = mapped_column(String(255))
     created: Mapped[datetime] = mapped_column(default=datetime.now)

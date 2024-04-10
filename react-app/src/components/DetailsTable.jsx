@@ -23,9 +23,9 @@ const DetailsTable = ({data, rowsPerPage, kbId, onDelete, onBack}) => {
         </tr>
       </thead>
       <tbody>
-        {slice.map((file) => (
+        {slice.map((file, index) => (
           <tr key={file.id} className={styles.tableRowHeader}>
-            <td className={styles.tableCell}>{file.id}</td>
+            <td className={styles.tableCell}>{index+1}</td>
             <td className={styles.tableCell}>{file.file_name}</td>
             <td className={styles.tableCell}>{file.created}</td>
             <td className={styles.tableCell}>{file.updated}</td>
