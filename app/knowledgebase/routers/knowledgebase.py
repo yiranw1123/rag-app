@@ -3,10 +3,9 @@ from .. import database, schemas
 from ..repository import knowledgebase
 from typing import List
 from . import knowledgebasefile
-import os
-from ..save_file import save_file
-from ..constants import UPLOADED_FILES_DIR
+from ..llm.process_file import store_and_process_file
 from sqlalchemy.ext.asyncio import AsyncSession
+from ..llm.summarizer import get_summarizer_chain
 
 router = APIRouter(prefix="/knowledgebase", tags=['knowledgebase'])
 
@@ -18,20 +17,15 @@ async def all(db: AsyncSession= Depends(get_db)):
     return [schemas.ShowKnowledgeBase(id = kb.id, name=kb.name, embedding=kb.embedding, created=kb.created, updated=kb.updated, description=kb.description) for kb in data]
 
 @router.post('/{id}/upload/', status_code=status.HTTP_201_CREATED)
-async def upload_files(id: int, files:List[UploadFile] = File(...), db: AsyncSession= Depends(get_db)):
+async def upload_files(id: int, files:List[UploadFile] = File(...), db: AsyncSession= Depends(get_db),  summarize_chain=Depends(get_summarizer_chain)):
 
     for file in files:
         file_name = file.filename
         # save file info to SQL
         await knowledgebasefile.create(schemas.CreateKnowledgeBaseFile(kb_id=id, file_name=file_name), db)
-        # save uploaded file to local dir
-        #save_file(file=file)
-        #  2. process files and create embedding
-        #table_summaries, text_summaries, img_summaries, texts, tables = process_pdf_and_summarize_elements(filename=file_name)
-        #  3 create vector db with collection name collection_{knowledge_base_id}
-        #add_to_collection(table_summaries, text_summaries, img_summaries, texts, tables, kb_id=id, file_name=file_name)
-        #  4. persist file chunks to redis with namespace prefix collection_{knowledge_base_id}
-        print(f"received files to upload to knowledgebase id: {id}")
+        # process file and save to backend
+        await store_and_process_file(file, summarize_chain)
+        print(f"Successfully processed {file_name}")
 
 
 @router.get('/{id}/files/', status_code=200, response_model=List[schemas.ShowKnowledgeBaseFile])

@@ -1,17 +1,45 @@
-from unstructured.partition.auto import partition
-from ..knowledgebase.constants import IMG_DIRECTORY, UPLOADED_FILES_DIR
+from unstructured.partition.auto import partition_pdf
+from ..constants import IMG_DIRECTORY, UPLOADED_FILES_DIR
 import subprocess
-from ..knowledgebase.schemas import Element
+from ..schemas import Element
 import glob
 import os
+from fastapi import UploadFile
 
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_community.chat_models import ChatOllama
+async def summarize_elements(elements, summarize_chain):
+    # Apply to text
+    texts = [i.text for i in elements]
+    text_summaries = summarize_chain.batch(texts, {"max_concurrency": 5})
+    
+    return text_summaries
 
-def get_raw_pdf_elements(filename):
+async def store_and_process_file(file:UploadFile, summarizer):
+    await save_file(file)
+    print(f"Successfully saved file {file.filename} to local directory")
+    raw_pdf_elements = await get_raw_pdf_elements(filename=file.filename)
+    table_elements, text_elements = await categorize_elements(raw_pdf_elements)
+    print(f"File {file.filename} has {len(table_elements)} tables and {len(text_elements)} texts")
+    text_summaries = await summarize_elements(text_elements, summarizer)
+    table_summaries= await summarize_elements(table_elements, summarizer)
+    img_summaries = await summarize_imgs()
+    print(f"processed {len(text_summaries)} text summaries, {len(table_summaries)} table summaries, and {len(img_summaries)} img summaries")
+
+async def save_file(file:UploadFile):
+    if not os.path.exists(UPLOADED_FILES_DIR):
+        os.makedirs(UPLOADED_FILES_DIR)
+    try:
+        contents = file.file.read()
+        with open(UPLOADED_FILES_DIR+f'{file.filename}', 'wb') as f:
+            f.write(contents)
+    except Exception:
+        return {"message": "There was an error uploading the file"}
+    finally:
+        f.close()
+        file.file.close()
+
+async def get_raw_pdf_elements(filename):
     print("received file {}".format(filename))
-    return partition(
+    return partition_pdf(
         filename=UPLOADED_FILES_DIR + filename,
         # Using pdf format to find embedded image blocks
         extract_images_in_pdf=True,
@@ -31,7 +59,7 @@ def get_raw_pdf_elements(filename):
         image_output_dir_path=IMG_DIRECTORY,
     )
 
-def categorize_elements(raw_pdf_elements):
+async def categorize_elements(raw_pdf_elements):
 
     # Create a dictionary to store counts of each type
     category_counts = {}
@@ -43,8 +71,6 @@ def categorize_elements(raw_pdf_elements):
         else:
             category_counts[category] = 1
 
-    print(category_counts)
-
     # Categorize by type
     categorized_elements = []
     for element in raw_pdf_elements:
@@ -55,41 +81,17 @@ def categorize_elements(raw_pdf_elements):
 
     # Tables
     table_elements = [e for e in categorized_elements if e.type == "table"]
-    print("Number of table elements ", len(table_elements))
-
     # Text
     text_elements = [e for e in categorized_elements if e.type == "text"]
-    print("Number of text elements",  len(text_elements))
 
     return table_elements, text_elements
 
-def summarize_elements(table_elements, text_elements):
-
-    # Prompt
-    prompt_text = """ Summarize the following text: {element} """
-    prompt = ChatPromptTemplate.from_template(prompt_text)
-
-    # Summary chain
-    model = ChatOllama(temperature=0, model="llama2:13b-chat")
-    summarize_chain = {"element": lambda x: x} | prompt | model | StrOutputParser()
-
-    # Apply to text
-    texts = [i.text for i in text_elements]
-    text_summaries = summarize_chain.batch(texts, {"max_concurrency": 5})
-
-    # Apply to tables
-    tables = [i.text for i in table_elements]
-    table_summaries = summarize_chain.batch(tables, {"max_concurrency": 5})
-    
-    return table_summaries, text_summaries, texts, tables
-
-
-def summarize_imgs(img_path):
+async def summarize_imgs():
     #summarize imgs
     subprocess.call(['sh', "summarize_img.sh"])
 
     # Get all .txt files in the directory
-    file_paths = glob.glob(os.path.expanduser(os.path.join(img_path, "*.txt")))
+    file_paths = glob.glob(os.path.expanduser(os.path.join(IMG_DIRECTORY, "*.txt")))
 
     print("Found ", len(file_paths), "imgs in directory")
 
@@ -108,10 +110,3 @@ def summarize_imgs(img_path):
     print("Processed ", len(img_summaries), " summaries from directory.")
     
     return img_summaries
-
-def process_pdf_and_summarize_elements(filename):
-    raw_pdf_elements = get_raw_pdf_elements(filename=filename)
-    table_elements, text_elements = categorize_elements(raw_pdf_elements)
-    table_summaries, text_summaries, texts, tables = summarize_elements(table_elements, text_elements)
-    img_summaries = summarize_imgs(IMG_DIRECTORY)
-    return table_summaries, text_summaries, img_summaries, texts, tables
