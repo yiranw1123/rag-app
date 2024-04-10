@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, desc
 
 from .. import models, schemas
 from fastapi import HTTPException, status
@@ -27,7 +27,7 @@ async def create(request: schemas.CreateKnowledgeBaseFile, db:AsyncSession):
     return file.id
 
 async def get_by_kbid(kb_id: int, db: AsyncSession):
-    stmt = select(models.KnowledgeBaseFile).where(models.KnowledgeBaseFile.kb_id == kb_id)
+    stmt = select(models.KnowledgeBaseFile).where(models.KnowledgeBaseFile.kb_id == kb_id).order_by(desc(models.KnowledgeBaseFile.updated))
     results = await db.execute(stmt)
     files = results.scalars().all()
     return files
