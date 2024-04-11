@@ -8,6 +8,7 @@ const CreateKBForm = ({onFormSubmit})=> {
   };
   const [form, setForm] = useState(initialForm);
   const [files, setFiles] = useState([]);
+  const [isCreating, setIsCreating] = useState(false);
   const fileInputRef = useRef();
 
   const handleInputChange = (event) => {
@@ -41,15 +42,15 @@ const CreateKBForm = ({onFormSubmit})=> {
 
   const handleMultipleSubmit = async (event) =>{
     event.preventDefault();
-    const kbId = await createKnowledgeBase(form);
+    setIsCreating(true);
 
     if(files.length === 0){
-      alert("No file is selected, KnowledgeBase created.");
+      alert("No file is selected, please add files.");
       return;
     }
 
+    const kbId = await createKnowledgeBase(form);
     const filesData = new FormData();
-
     files.forEach((file, index) => {
       filesData.append('files', file);
     });
@@ -76,6 +77,7 @@ const CreateKBForm = ({onFormSubmit})=> {
       if(fileInputRef.current){
         fileInputRef.current.value = '';
       }
+      setIsCreating(false);
       onFormSubmit(kbId);
     };
   }
@@ -104,9 +106,9 @@ const CreateKBForm = ({onFormSubmit})=> {
           </label>
           <input type='file' className='form-control' id='fupload' name='fupload' onChange={handleMultipleChange} multiple ref={fileInputRef}></input>
         </div>
-
         <button type="submit" className='btn btn-primary'>Create</button>
       </form>
+      {isCreating && <span>Creating KnowledgeBase...</span>}
     </div>
   );
 }

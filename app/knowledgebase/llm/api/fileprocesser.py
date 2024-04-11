@@ -6,6 +6,7 @@ import glob
 import os
 from fastapi import UploadFile
 import uuid
+from ..store.ChromaStore import add_to_collection
 
 async def summarize_elements(elements, summarize_chain):
     # Apply to text
@@ -14,7 +15,7 @@ async def summarize_elements(elements, summarize_chain):
 
     return text_summaries
 
-async def store_and_process_file(file:UploadFile, file_id: uuid, summarizer):
+async def store_and_process_file(file:UploadFile, file_id: uuid, kb_id:int, summarizer):
     stored_file_name = await save_file(file, file_id)
     print(f"Successfully saved file {file.filename} to local directory")
     await clear_img_dir()
@@ -22,12 +23,25 @@ async def store_and_process_file(file:UploadFile, file_id: uuid, summarizer):
     raw_pdf_elements = await get_raw_pdf_elements(filename=stored_file_name)
     table_elements, text_elements = await categorize_elements(raw_pdf_elements)
     print(f"File {file.filename} has {len(table_elements)} tables and {len(text_elements)} texts")
+
+
     text_summaries = await summarize_elements(text_elements, summarizer)
-    table_summaries= await summarize_elements(table_elements, summarizer)
+    add_to_collection(text_summaries, text_elements, file_id, kb_id)
+
+    if len(table_elements) >0:
+        table_summaries= await summarize_elements(table_elements, summarizer)
+        add_to_collection(table_summaries, table_elements, file_id, kb_id)
+        print(f"processed {len(table_summaries)} table summaries")
+
+
+    print(f"processed {len(text_summaries)} text summaries")
+
     if len(os.listdir(IMG_DIRECTORY)) != 0:
         img_summaries = await summarize_imgs()
         print(f"processed {len(img_summaries)} image summaries")
-    print(f"processed {len(text_summaries)} text summaries, {len(table_summaries)} table summaries")
+        add_to_collection(img_summaries, img_summaries, file_id, kb_id)
+        print("Added image summary to collection")
+
 
 async def save_file(file:UploadFile, file_id: uuid):
     if not os.path.exists(UPLOADED_FILES_DIR):
@@ -69,6 +83,7 @@ async def get_raw_pdf_elements(filename):
         combine_text_under_n_chars=2000,
         content_type="application/octet-stream",
         image_output_dir_path=IMG_DIRECTORY,
+        #strategy="fast"
     )
 
 async def categorize_elements(raw_pdf_elements):

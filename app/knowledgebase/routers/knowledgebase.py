@@ -6,6 +6,7 @@ from . import knowledgebasefile
 from ..llm.api.fileprocesser import store_and_process_file
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..llm.api.summarizer import get_summarizer_chain
+from ..llm.store.ChromaStore import delete_collection
 
 router = APIRouter(prefix="/knowledgebase", tags=['knowledgebase'])
 
@@ -24,7 +25,7 @@ async def upload_files(id: int, files:List[UploadFile] = File(...), db: AsyncSes
         # save file info to SQL
         file_id = await knowledgebasefile.create(schemas.CreateKnowledgeBaseFile(kb_id=id, file_name=file_name), db)
         # process file and save to backend
-        await store_and_process_file(file, file_id, summarize_chain)
+        await store_and_process_file(file, file_id, id, summarize_chain)
         print(f"Successfully processed {file_name}")
 
 @router.get('/{id}/files/', status_code=200, response_model=List[schemas.ShowKnowledgeBaseFile])
@@ -46,4 +47,6 @@ async def create(request: schemas.CreateKnowledgeBase, db: AsyncSession = Depend
 
 @router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
 async def delete(id: int, db: AsyncSession=Depends(get_db)):
+    # delete chroma collection
+    delete_collection(id)
     await knowledgebase.delete(id, db)

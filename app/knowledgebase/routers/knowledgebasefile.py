@@ -4,6 +4,7 @@ from .. import database, schemas
 from ..repository import knowledgebasefile
 from typing import List
 from uuid import UUID
+from ..llm.store.ChromaStore import delete_from_collection
 
 router = APIRouter(prefix="/knowledgebasefile", tags=['knowledgebasefile'])
 
@@ -33,4 +34,7 @@ async def create(request: schemas.CreateKnowledgeBaseFile, db: AsyncSession = De
 
 @router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
 async def delete(id: UUID, db: AsyncSession=Depends(get_db)):
+    file = await knowledgebasefile.get_by_id(id, db)
+    #delete from chroma
+    delete_from_collection(file.kb_id, str(id))
     await knowledgebasefile.delete(id, db)
