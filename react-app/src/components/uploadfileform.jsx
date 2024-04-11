@@ -4,6 +4,7 @@ import api from '../api';
 const UploadFileForm = ({data, onFormSubmit, jumpToDetails}) => {
   const [selectedKB, setSelectedKB] = useState("");
   const [files, setFiles] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef();
 
   const handleMultipleChange = (event)=> {
@@ -26,11 +27,17 @@ const UploadFileForm = ({data, onFormSubmit, jumpToDetails}) => {
     const config = {
       headers: {
         'content-type': 'multipart/form-data',
-      },
+      }
     };
 
     const kbId = document.getElementById("kb-dropdown").value; 
-    console.log(kbId);
+
+    //reset input files for next upload
+    resetSelection();
+    if(fileInputRef.current){
+      fileInputRef.current.value = '';
+    }
+    setIsUploading(true);
 
     try{
       const response =  await api.post(`/knowledgebase/${kbId}/upload/`, filesData, config);
@@ -43,11 +50,7 @@ const UploadFileForm = ({data, onFormSubmit, jumpToDetails}) => {
       console.error("Error uploading files: ", error);
       throw error;
     } finally{
-      // reset file pointer
-      if(fileInputRef.current){
-        fileInputRef.current.value = '';
-      }
-      resetSelection();
+      setIsUploading(false);
       await onFormSubmit(kbId);
     };
   }
@@ -69,8 +72,8 @@ const UploadFileForm = ({data, onFormSubmit, jumpToDetails}) => {
           <input type='file' className='form-control' id='fupload' name='fupload' onChange={handleMultipleChange} multiple ref={fileInputRef}></input>
         </div>
         <button type="submit" className='btn btn-primary' onClick={() => jumpToDetails(document.getElementById("kb-dropdown").value)}>Upload</button>
-
       </form>
+      {isUploading && <span>Uploading Files to DB...</span>}
     </div>
   );
 };
