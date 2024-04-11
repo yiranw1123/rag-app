@@ -41,8 +41,13 @@ const CreateKBForm = ({onFormSubmit})=> {
 
   const handleMultipleSubmit = async (event) =>{
     event.preventDefault();
-
     const kbId = await createKnowledgeBase(form);
+
+    if(files.length === 0){
+      alert("No file is selected, KnowledgeBase created.");
+      return;
+    }
+
     const filesData = new FormData();
 
     files.forEach((file, index) => {

@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import api from '../api';
 
 const UploadFileForm = ({data, onFormSubmit, jumpToDetails}) => {
@@ -17,6 +17,11 @@ const UploadFileForm = ({data, onFormSubmit, jumpToDetails}) => {
 
   const handleMultipleSubmit = async (event) =>{
     event.preventDefault();
+
+    if(files.length === 0){
+      alert("No file is selected");
+      return;
+    }
 
     const filesData = new FormData();
 

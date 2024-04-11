@@ -1,10 +1,10 @@
 from .. import models, schemas
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, desc
 
 async def get_all(db: AsyncSession):
-    stmt = select(models.KnowledgeBase)
+    stmt = select(models.KnowledgeBase).order_by(desc(models.KnowledgeBase.updated))
     results= await db.execute(stmt)
     kbs = results.scalars().all()
     return kbs
