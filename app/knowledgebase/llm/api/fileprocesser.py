@@ -1,5 +1,5 @@
 from unstructured.partition.auto import partition_pdf
-from ...constants import IMG_DIRECTORY, UPLOADED_FILES_DIR
+from ...constants import IMG_DIRECTORY, UPLOADED_FILES_DIR, COLLECTION_PREFIX
 import subprocess
 from ...schemas import Element
 import glob
@@ -7,6 +7,8 @@ import os
 from fastapi import UploadFile
 import uuid
 from ..store.ChromaStore import add_to_collection
+from ..store.RedisDocStore import mset
+# from..store.RedisDocStore import mset
 
 async def summarize_elements(elements, summarize_chain):
     # Apply to text
@@ -15,7 +17,7 @@ async def summarize_elements(elements, summarize_chain):
 
     return text_summaries
 
-async def store_and_process_file(file:UploadFile, file_id: uuid, kb_id:int, summarizer):
+async def store_and_process_file(file:UploadFile, file_id: uuid, kb_id:int, summarizer, chroma_client, redis_client):
     stored_file_name = await save_file(file, file_id)
     print(f"Successfully saved file {file.filename} to local directory")
     await clear_img_dir()
@@ -24,13 +26,16 @@ async def store_and_process_file(file:UploadFile, file_id: uuid, kb_id:int, summ
     table_elements, text_elements = await categorize_elements(raw_pdf_elements)
     print(f"File {file.filename} has {len(table_elements)} tables and {len(text_elements)} texts")
 
-
+    collection_name = f"{COLLECTION_PREFIX}{str(kb_id)}"
+    redis_namespace = f"{collection_name}:{file_id}"
     text_summaries = await summarize_elements(text_elements, summarizer)
-    add_to_collection(text_summaries, text_elements, file_id, kb_id)
+    doc_ids = add_to_collection(text_summaries, text_elements, file_id, collection_name, chroma_client)
+    await mset(redis_namespace, doc_ids, text_elements, redis_client)
 
     if len(table_elements) >0:
         table_summaries= await summarize_elements(table_elements, summarizer)
-        add_to_collection(table_summaries, table_elements, file_id, kb_id)
+        table_ids = add_to_collection(table_summaries, table_elements, file_id, collection_name)
+        await mset(redis_namespace, table_ids, table_elements,redis_client)
         print(f"processed {len(table_summaries)} table summaries")
 
 
@@ -39,7 +44,8 @@ async def store_and_process_file(file:UploadFile, file_id: uuid, kb_id:int, summ
     if len(os.listdir(IMG_DIRECTORY)) != 0:
         img_summaries = await summarize_imgs()
         print(f"processed {len(img_summaries)} image summaries")
-        add_to_collection(img_summaries, img_summaries, file_id, kb_id)
+        img_ids = add_to_collection(img_summaries, img_summaries, file_id, collection_name)
+        await mset(redis_namespace, img_ids, img_summaries,redis_client)
         print("Added image summary to collection")
 
 

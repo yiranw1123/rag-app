@@ -42,12 +42,13 @@ const CreateKBForm = ({onFormSubmit})=> {
 
   const handleMultipleSubmit = async (event) =>{
     event.preventDefault();
-    setIsCreating(true);
 
     if(files.length === 0){
       alert("No file is selected, please add files.");
       return;
     }
+
+    setIsCreating(true);
 
     const kbId = await createKnowledgeBase(form);
     const filesData = new FormData();
