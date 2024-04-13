@@ -8,7 +8,7 @@ id_key = "file_id"
 def add_to_collection(summaries, texts, file_id: uuid, collection_name: str, chroma_client):
     collection = chroma_client.get_or_create_collection(name = collection_name)
     doc_ids = [str(uuid.uuid4()) for _ in range(len(texts))]
-    collection.add(ids=doc_ids, metadatas={id_key: str(file_id)}, documents=summaries)
+    collection.add(ids=doc_ids, metadatas=[{id_key: str(file_id)} for _ in range(len(doc_ids))], documents=summaries)
     return doc_ids
 
 def delete_from_collection(kb_id:int, file_id:uuid, chroma_client):
