@@ -16,6 +16,3 @@ class Summarizer(object):
             model = ChatOllama(temperature=0, model="llama2:13b-chat")
             cls.__summarize_chain = {"element": lambda x: x} | prompt | model | StrOutputParser()
         return cls.__summarize_chain
-
-def get_summarizer_chain():
-    return Summarizer.get_summarize_chain()

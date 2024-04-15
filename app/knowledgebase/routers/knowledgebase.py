@@ -5,7 +5,7 @@ from typing import List
 from . import knowledgebasefile
 from ..llm.api.fileprocesser import store_and_process_file
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..llm.api.summarizer import get_summarizer_chain
+from ..dependencies import get_summarizer_chain
 from ..llm.store.ChromaStore import delete_collection
 from ..dependencies import get_chroma_client, get_redis_client
 
@@ -34,7 +34,7 @@ async def upload_files(id: int, files:List[UploadFile] = File(...),
         await store_and_process_file(file, file_id, id, summarize_chain, chroma, redis)
         print(f"Successfully processed {file_name}")
 
-@router.get('/{id}/files/', status_code=200, response_model=List[schemas.ShowKnowledgeBaseFile])
+@router.get('/{id}/files/', status_code=status.HTTP_200_OK, response_model=List[schemas.ShowKnowledgeBaseFile])
 async def get_by_knowledgebase_id(id: int, db: AsyncSession= Depends(get_db)):
     files = await knowledgebasefile.get_by_kbid(id, db)
     return [schemas.ShowKnowledgeBaseFile(id = f.id, kb_id = f.kb_id, file_name=f.file_name, created=f.created, updated=f.updated) for f in files]

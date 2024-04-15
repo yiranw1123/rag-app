@@ -2,11 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from knowledgebase import models
-from knowledgebase.routers import knowledgebase, knowledgebasefile
+from knowledgebase.routers import knowledgebase, knowledgebasefile, chat
 from knowledgebase.database import engine
-import aioredis
 import chromadb
-from .knowledgebase.constants import CHROMA_PERSIST_DIRECTORY
+from langchain_community.storage import RedisStore
+from dotenv import load_dotenv
+import os
 
 
 async def onStart(app: FastAPI):
@@ -14,11 +15,14 @@ async def onStart(app: FastAPI):
         await conn.run_sync(models.Base.metadata.drop_all)
         await conn.run_sync(models.Base.metadata.create_all)
 
-    app.state.redis = await aioredis.from_url("redis://localhost")
-    app.state.chroma = chromadb.PersistentClient(path= CHROMA_PERSIST_DIRECTORY)
+    app.state.redis = RedisStore(redis_url = "redis://localhost:6379")
+    #app.state.chroma = chromadb.PersistentClient(path= CHROMA_PERSIST_DIRECTORY)
+    app.state.chroma = chromadb.HttpClient(host="localhost", port=8080)
+
+    load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 async def onShutdown(app:FastAPI):
-    await app.state.redis.close()
+    pass
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,6 +35,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(knowledgebase.router)
 app.include_router(knowledgebasefile.router)
+app.include_router(chat.router)
 
 origins=[
     "http://127.0.0.1:3000",
