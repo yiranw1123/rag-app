@@ -41,5 +41,5 @@ async def delete(id: UUID, db: AsyncSession=Depends(get_db), chroma_client = Dep
     #delete from chroma
     delete_from_collection(file.kb_id, str(id),chroma_client)
     # delete from redis
-    await delete_from_redis_collection(collection_name = f"{COLLECTION_PREFIX}{file.kb_id}", file_id = str(id))
+    await delete_from_redis_collection(collection_name = f"{COLLECTION_PREFIX}{file.kb_id}", file_id = str(id), chunk_ids = [file_chunk.chunk_id for file_chunk in file.chunks])
     await knowledgebasefile.delete(id, db)
