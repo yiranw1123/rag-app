@@ -4,9 +4,9 @@ from .. import database, schemas
 from ..repository import knowledgebasefile
 from typing import List
 from uuid import UUID
-from ..llm.store.ChromaStore import delete_from_collection
+from ..store.ChromaStore import delete_from_collection
 from ..dependencies import get_chroma_client, get_redis_client
-from ..llm.store.RedisDocStore import delete_from_redis_collection
+from ..store.RedisDocStore import delete_from_redis_collection
 from ..constants import COLLECTION_PREFIX
 
 router = APIRouter(prefix="/knowledgebasefile", tags=['knowledgebasefile'])

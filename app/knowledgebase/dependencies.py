@@ -1,6 +1,6 @@
 from starlette.requests import Request
-from .llm.api.summarizer import Summarizer
-from .llm.api.qachain import QAChain
+from .api.summarizer import Summarizer
+from .api.qachain import QAChain
 
 async def get_chroma_client(request: Request):
     return request.app.state.chroma

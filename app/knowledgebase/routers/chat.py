@@ -1,9 +1,9 @@
 from fastapi import APIRouter, status, Depends
 from .. import database
 from ..dependencies import get_chroma_client, get_redis_client
-from ..llm.api.retriever import create_retriever
+from ..api.retriever import create_retriever
 from ..constants import COLLECTION_PREFIX
-from ..llm.api.qachain import QAChain
+from ..api.qachain import QAChain
 
 
 router = APIRouter(prefix="/chat", tags = ['chat'])

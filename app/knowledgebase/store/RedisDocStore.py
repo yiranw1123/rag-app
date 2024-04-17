@@ -21,10 +21,10 @@ async def delete_from_redis_collection(collection_name: str, file_id: str, chunk
     except Exception as e:
         print(f"Error when writing to redis: {e}")
 
-async def delete_redis_collection(collection_name:str, file_ids, chunk_ids):
+async def delete_redis_collection(collection_name:str, file_ids, chunk_ids, redis):
     tasks = []
     for fid, chunks in zip(file_ids, chunk_ids):
-        task = delete_from_redis_collection(collection_name, fid, chunks)
+        task = delete_from_redis_collection(collection_name, fid, chunks, redis)
         tasks.append(task)
     results = await asyncio.gather(*tasks)
     for result in results:

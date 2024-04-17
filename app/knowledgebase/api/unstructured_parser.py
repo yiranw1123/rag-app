@@ -1,7 +1,7 @@
 from unstructured.partition.auto import partition_pdf
-from ...constants import IMG_DIRECTORY
+from ..constants import IMG_DIRECTORY
 import subprocess
-from ...schemas import Element
+from ..schemas import Element
 import glob
 import os
 

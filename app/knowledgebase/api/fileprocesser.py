@@ -1,7 +1,4 @@
-from unstructured.partition.auto import partition_pdf
-from ...constants import IMG_DIRECTORY, UPLOADED_FILES_DIR, COLLECTION_PREFIX
-import subprocess
-from ...schemas import Element
+from ..constants import IMG_DIRECTORY, UPLOADED_FILES_DIR
 import os
 from fastapi import UploadFile
 import uuid

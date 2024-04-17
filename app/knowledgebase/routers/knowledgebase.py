@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, status, File, UploadFile
 from .. import database, schemas
-from ..repository import knowledgebase, filechunk
+from ..repository import knowledgebase
 from typing import List
 from . import knowledgebasefile
-from ..llm.api.fileprocesser import save_file, parse_pdf, summarize, save_to_chroma, save_to_redis, clear_file_dir, clear_img_dir
+from ..api.fileprocesser import save_file, parse_pdf, summarize, save_to_chroma, save_to_redis, clear_file_dir, clear_img_dir
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..dependencies import get_summarizer_chain
-from ..llm.store.ChromaStore import delete_collection
-from ..llm.store.RedisDocStore import delete_redis_collection
+from ..store.ChromaStore import delete_collection
+from ..store.RedisDocStore import delete_redis_collection
 from ..dependencies import get_chroma_client, get_redis_client
 import logging
 import uuid
@@ -87,13 +87,13 @@ async def create(request: schemas.CreateKnowledgeBase, db: AsyncSession = Depend
     return schemas.CreatedKBID(kb_id=kb_id)
 
 @router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
-async def delete(id: int, db: AsyncSession=Depends(get_db), chroma_client = Depends(get_chroma), redis_client = Depends(get_redis)):
+async def delete(id: int, db: AsyncSession=Depends(get_db), chroma_client = Depends(get_chroma), redis = Depends(get_redis)):
     # delete chroma collection
-    delete_collection(id,chroma_client)
+    delete_collection(id, chroma_client)
     files = await knowledgebasefile.get_by_kbid(id, db)
     file_ids = [file.id for file in files]
     chunk_ids = [file.chunks for file in files]
     assert(len(chunk_ids) ==  len(files))
     # delete from redis
-    await delete_redis_collection(collection_name=f"{COLLECTION_PREFIX}{id}",file_ids = file_ids, chunk_ids = chunk_ids, redis = redis_client)
+    await delete_redis_collection(collection_name=f"{COLLECTION_PREFIX}{id}",file_ids = file_ids, chunk_ids = chunk_ids, redis=redis)
     await knowledgebase.delete(id, db)
