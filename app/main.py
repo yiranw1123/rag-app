@@ -7,6 +7,7 @@ from knowledgebase.database import engine
 import chromadb
 from langchain_community.storage import RedisStore
 from dotenv import load_dotenv
+import aioredis
 import os
 import logging
 
@@ -15,17 +16,19 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(leve
 async def onStart(app: FastAPI):
     async with engine.begin() as conn:
 
-        #await conn.run_sync(models.Base.metadata.drop_all)
+        await conn.run_sync(models.Base.metadata.drop_all)
         await conn.run_sync(models.Base.metadata.create_all)
 
-    app.state.redis = RedisStore(redis_url = "redis://localhost:6379")
+    #app.state.redisstore = RedisStore(redis_url = "redis://localhost:6379")
+    app.state.redis = await aioredis.from_url("redis://localhost:6379")
     #app.state.chroma = chromadb.PersistentClient(path= CHROMA_PERSIST_DIRECTORY)
     app.state.chroma = chromadb.HttpClient(host="localhost", port=8080)
 
     load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 async def onShutdown(app:FastAPI):
-    pass
+    app.state.redis.close()
+    await app.state.redis.wait_closed()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

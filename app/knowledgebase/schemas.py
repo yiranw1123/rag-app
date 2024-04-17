@@ -1,6 +1,6 @@
 from pydantic import BaseModel,UUID4
 from datetime import datetime
-from typing import Any
+from typing import Any, List
 
 class ShowKnowledgeBase(BaseModel):
     name: str
@@ -16,6 +16,7 @@ class ShowKnowledgeBaseFile(BaseModel):
     file_name: str
     created: datetime
     updated:datetime
+    chunks:List[UUID4]
 
 class CreateKnowledgeBase(BaseModel):
     knowledgebase_name: str
