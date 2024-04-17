@@ -6,6 +6,8 @@ from typing import List
 from uuid import UUID
 from ..llm.store.ChromaStore import delete_from_collection
 from ..dependencies import get_chroma_client
+from ..llm.store.RedisDocStore import delete_from_redis_collection
+from ..constants import COLLECTION_PREFIX
 
 router = APIRouter(prefix="/knowledgebasefile", tags=['knowledgebasefile'])
 
@@ -38,4 +40,6 @@ async def delete(id: UUID, db: AsyncSession=Depends(get_db), chroma_client = Dep
     file = await knowledgebasefile.get_by_id(id, db)
     #delete from chroma
     delete_from_collection(file.kb_id, str(id),chroma_client)
+    # delete from redis
+    await delete_from_redis_collection(collection_name = f"{COLLECTION_PREFIX}{file.kb_id}", file_id = str(id))
     await knowledgebasefile.delete(id, db)

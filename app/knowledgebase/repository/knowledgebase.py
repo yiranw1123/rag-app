@@ -22,7 +22,7 @@ async def create(reqeust: schemas.CreateKnowledgeBase, db: AsyncSession):
     kb = models.KnowledgeBase(name = reqeust.knowledgebase_name, description=reqeust.description, \
                                embedding = "embed func", collection_name=None)
     db.add(kb)
-    await db.commit()
+    await db.flush()
     await db.refresh(kb)
     return kb.id
 
@@ -34,6 +34,5 @@ async def delete(id: int, db:AsyncSession):
     if not kb:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND,
                             detail= f"KnowledgeBase with id {id} is not found")
-    else:
-        await db.delete(kb)
-        await db.commit()
+    await db.delete(kb)
+    await db.flush()

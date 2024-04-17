@@ -22,7 +22,7 @@ async def get_by_id(id: int, db: AsyncSession):
 async def create(request: schemas.CreateKnowledgeBaseFile, db:AsyncSession):
     file = models.KnowledgeBaseFile(file_name=request.file_name, kb_id=request.kb_id)
     db.add(file)
-    await db.commit()
+    await db.flush()
     await db.refresh(file)
     return file.id
 
@@ -39,6 +39,6 @@ async def delete(id: int, db:AsyncSession):
     if not file:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND,
                             detail= f"KnowledgeBase File with id {id} is not found")
-    else:
-        await db.delete(file)
-        await db.commit()
+
+    await db.delete(file)
+    await db.flush()

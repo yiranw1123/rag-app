@@ -8,11 +8,14 @@ import chromadb
 from langchain_community.storage import RedisStore
 from dotenv import load_dotenv
 import os
+import logging
 
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 async def onStart(app: FastAPI):
     async with engine.begin() as conn:
-        await conn.run_sync(models.Base.metadata.drop_all)
+
+        #await conn.run_sync(models.Base.metadata.drop_all)
         await conn.run_sync(models.Base.metadata.create_all)
 
     app.state.redis = RedisStore(redis_url = "redis://localhost:6379")

@@ -28,6 +28,10 @@ class CreateKnowledgeBaseFile(BaseModel):
     kb_id: int
     file_name: str
 
+class CreateFileChunk(BaseModel):
+    chunk_id: UUID4
+    file_id: UUID4
+
 class Element(BaseModel):
     type: str
     text: Any

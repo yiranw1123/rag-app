@@ -9,8 +9,10 @@ async def mset(collection_name_space: str, chunk_ids, text_elements, redis):
     except Exception as e:
         print(f"Error when writing to redis: {e}")
 
-def delete_from_collection(collectionName: str, file_id: str):
+async def delete_from_redis_collection(collection_name: str, file_id: str):
+    # TO DO
     pass
 
 def delete_collection(collectionName:str):
+    # TO DO
     pass
