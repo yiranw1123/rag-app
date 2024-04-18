@@ -5,7 +5,6 @@ from knowledgebase import models
 from knowledgebase.routers import knowledgebase, knowledgebasefile, chat
 from knowledgebase.database import engine
 import chromadb
-from langchain_community.storage import RedisStore
 from dotenv import load_dotenv
 import aioredis
 import os
@@ -27,8 +26,7 @@ async def onStart(app: FastAPI):
     load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 async def onShutdown(app:FastAPI):
-    app.state.redis.close()
-    await app.state.redis.wait_closed()
+    await app.state.redis.close()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

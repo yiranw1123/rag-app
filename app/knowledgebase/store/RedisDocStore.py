@@ -1,5 +1,4 @@
 import asyncio
-import aioredis
 import uuid
 from typing import List
 
@@ -30,4 +29,17 @@ async def delete_redis_collection(collection_name:str, file_ids, chunk_ids, redi
     for result in results:
         if isinstance(result, Exception):
             print(f"Error occurred: {result}")
-    
+
+async def delete_keys(keys, redis):
+    await redis.delete(*keys)
+
+async def search_keys(match_pattern, redis):
+    all_keys = []
+
+    async with redis.client() as conn:
+        cur = b"0"  # set initial cursor to 0
+        while cur:
+            cur, keys = await conn.scan(cur, match=match_pattern)
+            print("Iteration results:", keys)
+            all_keys.extend(keys)
+    return all_keys

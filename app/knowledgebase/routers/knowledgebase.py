@@ -3,15 +3,13 @@ from .. import database, schemas
 from ..repository import knowledgebase
 from typing import List
 from . import knowledgebasefile
-from ..api.fileprocesser import save_file, parse_pdf, summarize, save_to_chroma, save_to_redis, clear_file_dir, clear_img_dir
+from ..api.fileuploader import handle_file_upload, handle_chroma_rollback, handle_redis_rollback
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..dependencies import get_summarizer_chain
 from ..store.ChromaStore import delete_collection
 from ..store.RedisDocStore import delete_redis_collection
 from ..dependencies import get_chroma_client, get_redis_client
 import logging
-import uuid
-from .filechunk import add_chunk_ids
 from ..constants import COLLECTION_PREFIX
 
 router = APIRouter(prefix="/knowledgebase", tags=['knowledgebase'])
@@ -32,41 +30,17 @@ async def all(db: AsyncSession= Depends(get_db)):
 async def upload_files(id: int, files:List[UploadFile] = File(...),
                         db: AsyncSession= Depends(get_db),  summarize_chain=Depends(get_summarizer_chain),
                         chroma=Depends(get_chroma), redis=Depends(get_redis)):
-
+    processed = []
     for file in files:
         try:
-            file_name = file.filename
-            logger.info(f"Ready to process {file_name}")
-            kb_exists = await knowledgebase.get_by_id(id, db)
-            if not kb_exists:
-                raise ValueError("KnowledgeBase ID does not exist")
-            # save file info to SQL
-            file_id = await knowledgebasefile.create(schemas.CreateKnowledgeBaseFile(kb_id=id, file_name=file_name), db)
-            # process file and save to backend
-            stored_file_name = await save_file(file, file_id)
-            table_elements, text_elements = await parse_pdf(stored_file_name, file_id)
-            text_summaries, table_summaries, img_summaries = await summarize(text_elements, table_elements, file_id, summarize_chain)
-            
-            text_ids = [str(uuid.uuid4()) for _ in range(len(text_summaries))]
-            table_ids = [str(uuid.uuid4()) for _ in range(len(table_summaries))]
-            img_ids = [str(uuid.uuid4()) for _ in range(len(img_summaries))]
-
-            text_ids.extend(table_ids)
-            text_ids.extend(img_ids)
-
-            await add_chunk_ids(text_ids, file_id, db)
-
-            collection_name = f"{COLLECTION_PREFIX}{str(id)}"
-            redis_namespace = f"{collection_name}:{file_id}"
-            await save_to_chroma(collection_name, file_id, chroma, text_summaries, text_ids, table_summaries, table_ids, img_summaries, img_ids)
-            await save_to_redis(redis_namespace, redis, text_elements, text_ids, table_elements, table_ids, img_summaries, img_ids)
-
-            await clear_img_dir(file_id=file_id)
-            await clear_file_dir(file_id=file_id)
-
-            print(f"Successfully processed {file_name}")
+            file_id = await handle_file_upload(id, file, db, chroma, redis, summarize_chain)
+            processed.append(str(file_id))
+            raise Exception("test roll back")
+            print(f"Successfully processed {file.filename}")
         except Exception as e:
             logger.exception(f"Exception occured {e}")
+            handle_chroma_rollback(id, processed, chroma)
+            await handle_redis_rollback(id, processed, redis)
             raise
 
 @router.get('/{id}/files/', status_code=status.HTTP_200_OK, response_model=List[schemas.ShowKnowledgeBaseFile])
