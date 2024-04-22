@@ -26,7 +26,6 @@ async def create(reqeust: schemas.CreateKnowledgeBase, db: AsyncSession):
     await db.refresh(kb)
     return kb.id
 
-
 async def delete(id: int, db:AsyncSession):
     stmt = select(models.KnowledgeBase).where(models.KnowledgeBase.id == id)
     result = await db.execute(stmt)

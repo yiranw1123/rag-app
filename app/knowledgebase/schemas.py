@@ -33,6 +33,13 @@ class CreateFileChunk(BaseModel):
     chunk_id: UUID4
     file_id: UUID4
 
+class ShowChat(BaseModel):
+    chat_name: str
+
+class CreateChat(BaseModel):
+    chat_name: str
+    kb_id: int
+
 class Element(BaseModel):
     type: str
     text: Any

@@ -41,4 +41,12 @@ class FileChunk(Base):
     file_id: Mapped[Uuid] = mapped_column(Uuid, ForeignKey("knowledge_base_file.id"))
     created: Mapped[datetime] = mapped_column(default = datetime.now)
     file = relationship("KnowledgeBaseFile", back_populates= "chunks")
+
+class Chat(Base):
+    __tablename__ = "chat"
+    id: Mapped[Uuid] = mapped_column(Uuid, primary_key=True ,default=uuid.uuid4)
+    kb_id:Mapped[int] = mapped_column(ForeignKey("knowledge_base.id"), index=True)
+    created: Mapped[datetime] = mapped_column(default=datetime.now)
+    chat_name: Mapped[str] = mapped_column(String(255))
+
 Index("files_by_kb_id", KnowledgeBaseFile.kb_id)

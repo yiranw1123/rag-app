@@ -48,7 +48,8 @@ async def get_by_knowledgebase_id(id: int, db: AsyncSession= Depends(get_db)):
 @router.get('/{id}', status_code=status.HTTP_200_OK, response_model=schemas.ShowKnowledgeBase)
 async def get_by_id(id: int, db: AsyncSession= Depends(get_db)):
     kb = await knowledgebase.get_by_id(id, db)
-    return schemas.ShowKnowledgeBase(name = kb.name, id = kb.id, embedding=kb.embedding, created=kb.created, updated=kb.updated)
+    return schemas.ShowKnowledgeBase(name = kb.name, id = kb.id, embedding=kb.embedding,
+                                      created=kb.created, updated=kb.updated, description=kb.description)
 
 @router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.CreatedKBID)
 async def create(request: schemas.CreateKnowledgeBase, db: AsyncSession = Depends(get_db)):
