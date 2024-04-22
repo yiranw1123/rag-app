@@ -3,10 +3,17 @@ import React, {useState} from "react";
 import useTable from '../hooks/useTable';
 import TableFooter from "./tablefooter";
 import styles from "./Table.module.css";
+import {useNavigate} from "react-router-dom";
 
 const KBTable = ({data, rowsPerPage, onView, onDelete}) => {
+  const navigate = useNavigate();
+
   const [page, setPage] = useState(1);
   const {slice, range} = useTable(data, page, rowsPerPage);
+
+  const goToChat = (kbId) =>{
+    navigate(`/chat/${kbId}`);
+  };
 
   return(
     <>
@@ -34,7 +41,7 @@ const KBTable = ({data, rowsPerPage, onView, onDelete}) => {
               <td className={`${styles.tableCell} ${styles.buttonContainer}`}>
                 <button className={`${styles.actionButton} ${styles.viewButton}`} onClick={() => onView(knowledgebase.id)}> View</button>
                 <button className={`${styles.actionButton} ${styles.deleteButton}`} onClick={() => onDelete(knowledgebase.id)}> Delete</button>
-                <button className={`${styles.actionButton} ${styles.chatButton}`}> Chat</button>
+                <button className={`${styles.actionButton} ${styles.chatButton}`} onClick={() =>goToChat(knowledgebase.id)}> Chat</button>
               </td>
             </tr>
           ))}

@@ -1,10 +1,10 @@
 import React, {useState, useEffect} from 'react'
-import api from './api'
-import CreateKBForm from './components/createkbform'
+import api from '../api'
+import CreateKBForm from '../components/createkbform'
 import styles from "./App.module.css";
-import KBTable from './components/kbtable'
-import UploadFileForm from './components/uploadfileform';
-import DetailsTable from './components/detailstable';
+import KBTable from '../components/kbtable'
+import UploadFileForm from '../components/uploadfileform';
+import DetailsTable from '../components/detailstable';
 
 const App = () => {
   const [knowledgebase, setKnowledgebase] = useState([]);
