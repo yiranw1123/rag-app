@@ -1,8 +1,10 @@
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain.retrievers.multi_vector import MultiVectorRetriever
+from ..store.RedisStore import RedisStore
+from langchain.storage._lc_store import create_kv_docstore
 
-async def create_retriever(collection_name, chroma_client, redis_client):
+async def create_retriever(collection_name, chroma_client):
     id_key = "collection_prefix_id"
     vectorstore = Chroma(
         client = chroma_client,
@@ -12,7 +14,7 @@ async def create_retriever(collection_name, chroma_client, redis_client):
 
     retriever = MultiVectorRetriever(
         vectorstore= vectorstore,
-        docstore=redis_client, 
+        docstore=RedisStore(namespace=collection_name), 
         id_key = id_key
     )
     return retriever

@@ -7,18 +7,18 @@ from .. import schemas
 from ..routers.filechunk import add_chunk_ids
 from ..constants import COLLECTION_PREFIX
 from typing import List
-from ..store.ChromaStore import delete_from_collection
-from ..store.RedisDocStore import search_keys, delete_keys
+from ..store.ChromaStore import delete_from_collection,add_to_collection
+from ..store.RedisStore import RedisStore
+from ..store.utils.RedisStoreUtils import handle_file_delete_in_redis
 import logging
-from ..routers import knowledgebasefile
-from ..store.ChromaStore import add_to_collection
-from ..store.RedisDocStore import mset
-import asyncio
+from langchain.docstore.document import Document
+from itertools import chain
+
 
 logger = logging.getLogger(__name__)
 
 
-async def handle_file_upload(id, file:UploadFile, db, chroma, redis, summarize_chain):
+async def handle_file_upload(id, file:UploadFile, db, chroma, summarize_chain):
     file_name = file.filename
     kb_exists = await knowledgebase.get_by_id(id, db)
     if not kb_exists:
@@ -34,17 +34,20 @@ async def handle_file_upload(id, file:UploadFile, db, chroma, redis, summarize_c
     table_ids = [str(uuid.uuid4()) for _ in range(len(table_summaries))]
     img_ids = [str(uuid.uuid4()) for _ in range(len(img_summaries))]
 
-    ids = text_ids
-    ids.extend(table_ids)
-    ids.extend(img_ids)
+    combined_ids = list(chain(text_ids, table_ids, img_ids))
+    combined_summaries = list(chain(text_summaries, table_summaries, img_summaries))
+    if(len(combined_ids) != len(combined_summaries)):
+        raise Exception(f"Number of ids {len(combined_ids)} and {len(combined_summaries)} doesn't match")
 
-    await add_chunk_ids(ids, file_id, db)
+    await add_chunk_ids(combined_ids, file_id, db)
 
     collection_name = f"{COLLECTION_PREFIX}{str(id)}"
+    await save_to_chroma(collection_name, file_id, chroma, combined_ids, combined_summaries)
+    
+    # create redis client for adding file with file_id to redis
     redis_namespace = f"{collection_name}:{file_id}"
-
-    await save_to_chroma(collection_name, file_id, chroma, text_summaries, text_ids, table_summaries, table_ids, img_summaries, img_ids)
-    await save_to_redis(redis_namespace, redis, text_elements, text_ids, table_elements, table_ids, img_summaries, img_ids)
+    redis_client = RedisStore(redis_namespace)
+    await save_to_redis(redis_client, combined_ids, combined_summaries)
 
     await clear_img_dir(file_id=file_id)
     await clear_file_dir(file_id=file_id)
@@ -60,39 +63,34 @@ def handle_chroma_rollback(kb_id, processed:List[str], chroma):
         except Exception as e:
             logger.exception(f"An unexpected error occurred: {str(e)}")
 
-async def handle_redis_rollback(kb_id, processed:List[str], redis):
+async def handle_redis_rollback(kb_id, processed:List[str]):
     for fid in processed:
         try:
-            match_pattern = f"{COLLECTION_PREFIX}{kb_id}:{fid}:*"
-            keys = await search_keys(match_pattern, redis)
-            await delete_keys(keys, redis)
+            await handle_file_delete_in_redis(kb_id, fid)
             logger.info(f"Redis - Successfully rolled back file with id {fid} in knowledge base{kb_id}")
         except Exception as e:
             logger.exception(f"An unexpected error occurred: {str(e)}")
 
 async def save_to_chroma(collection_name: str, file_id: uuid, chroma_client,
-                        text_summaries, text_ids, table_summaries, table_ids, img_summaries, img_ids):
+                        combined_ids, combined_summaries):
     try:
-        if text_summaries:
-            add_to_collection(text_summaries, text_ids, file_id, collection_name, chroma_client)
-            print(f"processed {len(text_summaries)} text summaries")
-        if table_summaries:
-            add_to_collection(table_summaries, table_ids, file_id, collection_name, chroma_client)
-            print(f"processed {len(table_summaries)} table summaries")
-        if img_summaries:
-            add_to_collection(img_summaries, img_ids, file_id, collection_name, chroma_client)
-            print(f"processed {len(img_summaries)} image summaries")
+        add_to_collection(combined_summaries, combined_ids, file_id, collection_name, chroma_client)
+        print(f"Successfully processed {len(combined_ids)} summaries")
     except Exception as e:
         logger.exception(f"An unexpected exception occured: {e}")
     
-async def save_to_redis(redis_namespace: str, redis_client,
-                        text_elements, text_ids, table_elements, table_ids, img_summaries, img_ids):
+async def save_to_redis(redis_client, combined_ids, combined_summaries):
     try:
-        if text_elements:
-            await mset(redis_namespace, text_ids, [text_element.text for text_element in text_elements], redis_client)
-        if table_elements:
-            await mset(redis_namespace, table_ids, [table_element.text for table_element in table_elements],redis_client)
-        if img_summaries:
-            await mset(redis_namespace, img_ids, img_summaries,redis_client)
+        data = await create_documents(combined_ids, combined_summaries)
+        await redis_client.mset(data)
     except Exception as e:
         logger.exception(f"An unexpected exception occured: {e}")        
+
+# return a dictionary of chunk_id: document
+async def create_documents(text_ids, text_elements):
+    dict = {}
+
+    for id, element in zip(text_ids, text_elements):
+      dict[id] = Document(page_content=element, metadata={"doc_id": id})
+
+    return dict

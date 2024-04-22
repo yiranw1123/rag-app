@@ -7,16 +7,14 @@ from ..api.fileuploader import handle_file_upload, handle_chroma_rollback, handl
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..dependencies import get_summarizer_chain
 from ..store.ChromaStore import delete_collection
-from ..store.RedisDocStore import delete_redis_collection
-from ..dependencies import get_chroma_client, get_redis_client
+from ..store.utils.RedisStoreUtils import handle_multiple_file_delete_in_redis
+from ..dependencies import get_chroma_client
 import logging
-from ..constants import COLLECTION_PREFIX
 
 router = APIRouter(prefix="/knowledgebase", tags=['knowledgebase'])
 
 get_db = database.get_db
 get_chroma = get_chroma_client
-get_redis = get_redis_client
 
 logger = logging.getLogger(__name__)
 
@@ -29,18 +27,17 @@ async def all(db: AsyncSession= Depends(get_db)):
 @router.post('/{id}/upload/', status_code=status.HTTP_201_CREATED)
 async def upload_files(id: int, files:List[UploadFile] = File(...),
                         db: AsyncSession= Depends(get_db),  summarize_chain=Depends(get_summarizer_chain),
-                        chroma=Depends(get_chroma), redis=Depends(get_redis)):
+                        chroma=Depends(get_chroma)):
     processed = []
     for file in files:
         try:
-            file_id = await handle_file_upload(id, file, db, chroma, redis, summarize_chain)
+            file_id = await handle_file_upload(id, file, db, chroma, summarize_chain)
             processed.append(str(file_id))
-            raise Exception("test roll back")
             print(f"Successfully processed {file.filename}")
         except Exception as e:
             logger.exception(f"Exception occured {e}")
             handle_chroma_rollback(id, processed, chroma)
-            await handle_redis_rollback(id, processed, redis)
+            await handle_redis_rollback(id, processed)
             raise
 
 @router.get('/{id}/files/', status_code=status.HTTP_200_OK, response_model=List[schemas.ShowKnowledgeBaseFile])
@@ -61,7 +58,7 @@ async def create(request: schemas.CreateKnowledgeBase, db: AsyncSession = Depend
     return schemas.CreatedKBID(kb_id=kb_id)
 
 @router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
-async def delete(id: int, db: AsyncSession=Depends(get_db), chroma_client = Depends(get_chroma), redis = Depends(get_redis)):
+async def delete(id: int, db: AsyncSession=Depends(get_db), chroma_client = Depends(get_chroma)):
     # delete chroma collection
     delete_collection(id, chroma_client)
     files = await knowledgebasefile.get_by_kbid(id, db)
@@ -69,5 +66,5 @@ async def delete(id: int, db: AsyncSession=Depends(get_db), chroma_client = Depe
     chunk_ids = [file.chunks for file in files]
     assert(len(chunk_ids) ==  len(files))
     # delete from redis
-    await delete_redis_collection(collection_name=f"{COLLECTION_PREFIX}{id}",file_ids = file_ids, chunk_ids = chunk_ids, redis=redis)
+    handle_multiple_file_delete_in_redis(id, file_ids)
     await knowledgebase.delete(id, db)

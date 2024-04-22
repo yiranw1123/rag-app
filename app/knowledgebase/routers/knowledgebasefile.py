@@ -5,16 +5,15 @@ from ..repository import knowledgebasefile
 from typing import List
 from uuid import UUID
 from ..store.ChromaStore import delete_from_collection
-from ..dependencies import get_chroma_client, get_redis_client
-from ..store.RedisDocStore import delete_from_redis_collection
+from ..dependencies import get_chroma_client
+from ..store.RedisStore import RedisStore
+from ..store.utils.RedisStoreUtils import handle_file_delete_in_redis
 from ..constants import COLLECTION_PREFIX
 
 router = APIRouter(prefix="/knowledgebasefile", tags=['knowledgebasefile'])
 
 get_db = database.get_db
 get_chroma = get_chroma_client
-get_redis = get_redis_client
-
 @router.get('/', response_model=List[schemas.ShowKnowledgeBaseFile])
 async def all(db: AsyncSession= Depends(get_db)):
     files= await knowledgebasefile.get_all(db)
@@ -37,10 +36,13 @@ async def create(request: schemas.CreateKnowledgeBaseFile, db: AsyncSession = De
     return id
 
 @router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
-async def delete(id: UUID, db: AsyncSession=Depends(get_db), chroma_client = Depends(get_chroma), redis_client = Depends(get_redis)):
+async def delete(id: UUID, db: AsyncSession=Depends(get_db), chroma_client = Depends(get_chroma)):
     file = await knowledgebasefile.get_by_id(id, db)
+
+    kb_id = file.kb_id
+    file_id = str(id)
     #delete from chroma
-    delete_from_collection(file.kb_id, str(id),chroma_client)
+    delete_from_collection(kb_id, file_id, chroma_client)
     # delete from redis
-    await delete_from_redis_collection(collection_name = f"{COLLECTION_PREFIX}{file.kb_id}", file_id = str(id), chunk_ids = [file_chunk.chunk_id for file_chunk in file.chunks], redis=redis_client)
+    await handle_file_delete_in_redis(kb_id, file_id)
     await knowledgebasefile.delete(id, db)

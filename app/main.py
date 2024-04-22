@@ -18,15 +18,12 @@ async def onStart(app: FastAPI):
         await conn.run_sync(models.Base.metadata.drop_all)
         await conn.run_sync(models.Base.metadata.create_all)
 
-    #app.state.redisstore = RedisStore(redis_url = "redis://localhost:6379")
-    app.state.redis = await aioredis.from_url("redis://localhost:6379")
-    #app.state.chroma = chromadb.PersistentClient(path= CHROMA_PERSIST_DIRECTORY)
     app.state.chroma = chromadb.HttpClient(host="localhost", port=8080)
 
     load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 async def onShutdown(app:FastAPI):
-    await app.state.redis.close()
+    pass
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
