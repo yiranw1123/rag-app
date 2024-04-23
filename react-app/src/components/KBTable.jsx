@@ -4,6 +4,7 @@ import useTable from '../hooks/useTable';
 import TableFooter from "./tablefooter";
 import styles from "./Table.module.css";
 import {useNavigate} from "react-router-dom";
+import api from '../api';
 
 const KBTable = ({data, rowsPerPage, onView, onDelete}) => {
   const navigate = useNavigate();
@@ -11,8 +12,21 @@ const KBTable = ({data, rowsPerPage, onView, onDelete}) => {
   const [page, setPage] = useState(1);
   const {slice, range} = useTable(data, page, rowsPerPage);
 
-  const goToChat = (kbId) =>{
-    navigate(`/chat/${kbId}`);
+  const createChat = async (kbId) => {
+    return await api.get(`/chat/kb_id/${kbId}`);
+  };
+
+  const goToChat = async (kbId) =>{
+    try{
+      const response = await createChat(kbId);
+      if(response.status !== 200){
+        throw new Error("Network response was not ok " + response.statusText);
+      }
+      const data = await response.data;
+      navigate(`/chat/${data.id}`);
+    } catch (error) {
+      console.error("Error fetching chat:", error);
+    }
   };
 
   return(

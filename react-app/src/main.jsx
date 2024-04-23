@@ -14,10 +14,10 @@ const router = createBrowserRouter([
   {
     path: "/",
     element:<App/>,
-    errorElement: <ErrorPage/>,
+    errorElement: <ErrorPage/>
   },
   {
-    path: "chat/:kbId",
+    path: "chat/:id",
     element: <Chat/>
   }
 ])

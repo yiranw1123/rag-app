@@ -1,0 +1,18 @@
+.chatWindow {
+  flex-grow: 1;       /* Takes up remaining space */
+  background-color: #c95d5d; /* White background for chat window */
+  overflow-y: auto;
+  flex-direction: column;
+  position: relative; /* Allows scrolling for overflow content */
+}
+
+.chatMessages {
+  flex-grow: 1;  /* Allow message area to grow and fill space */
+  overflow-y: auto;  /* Scrollable message area */
+}
+
+.chatInput {
+  margin-top: auto;  /* Push the input area to the bottom */
+  display: flex;
+}
+  

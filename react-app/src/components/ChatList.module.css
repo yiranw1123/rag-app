@@ -1,0 +1,23 @@
+.chatListContainer {
+  width: 250px;       /* Fixed width for the sidebar */
+  background-color: #cdc4c4; /* Light grey background */
+  height: 100vh; 
+  border: 10px;
+  border-radius: 5px;
+}
+
+.listHeader{
+  display: flex;           /* Activates flexbox layout */
+  align-items: center;     /* Vertically centers the items in the container */
+}
+
+.listHeader h3 {
+  margin-right: 50px;      /* Adds some spacing between the h2 and the svg */
+}
+
+.chatItem{
+  text-align: center;
+  font-size: 18px;
+  margin: 10px;
+  padding:10px;
+}
