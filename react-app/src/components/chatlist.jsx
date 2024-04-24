@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import api from '../api';
 import styles from "./ChatList.module.css";
+import {useNavigate} from "react-router-dom";
 
 const ChatList = (setActiveChat) => {
+  const navigate = useNavigate();
   const [chats, setChats] = useState([]);
 
   const fetchChats = async() => {
@@ -11,6 +13,7 @@ const ChatList = (setActiveChat) => {
   };
 
   const onSelectChat = (chatId) => {
+    navigate(`/chat/${chatId}`)
     setActiveChat(chatId);
   };
 

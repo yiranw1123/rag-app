@@ -6,7 +6,6 @@ from knowledgebase.routers import knowledgebase, knowledgebasefile, chat
 from knowledgebase.database import engine
 import chromadb
 from dotenv import load_dotenv
-import aioredis
 import os
 import logging
 
@@ -15,7 +14,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(leve
 async def onStart(app: FastAPI):
     async with engine.begin() as conn:
 
-        await conn.run_sync(models.Base.metadata.drop_all)
+        #await conn.run_sync(models.Base.metadata.drop_all)
         await conn.run_sync(models.Base.metadata.create_all)
 
     app.state.chroma = chromadb.HttpClient(host="localhost", port=8080)
@@ -34,13 +33,11 @@ async def lifespan(app: FastAPI):
         await onShutdown(app)
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(knowledgebase.router)
-app.include_router(knowledgebasefile.router)
-app.include_router(chat.router)
 
 origins=[
     "http://127.0.0.1:3000",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "http://localhost:8000"
 ]
 
 app.add_middleware(
@@ -50,3 +47,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(knowledgebase.router)
+app.include_router(knowledgebasefile.router)
+app.include_router(chat.router)
+app.websocket("/chat/{id}/ws")(chat.post)

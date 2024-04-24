@@ -1,18 +1,49 @@
+/* ChatWindow.module.css */
 .chatWindow {
-  flex-grow: 1;       /* Takes up remaining space */
-  background-color: #c95d5d; /* White background for chat window */
-  overflow-y: auto;
-  flex-direction: column;
-  position: relative; /* Allows scrolling for overflow content */
+  width: 100%;
+  max-width: 1200px; /* Adjust width as needed */
+  margin: 0 auto;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden; /* Ensures that children do not overflow the border radius */
 }
 
 .chatMessages {
-  flex-grow: 1;  /* Allow message area to grow and fill space */
-  overflow-y: auto;  /* Scrollable message area */
+  height: 750px; /* Adjust height as needed */
+  overflow-y: auto; /* Enables vertical scrolling */
+  padding: 10px;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
 }
 
-.chatInput {
-  margin-top: auto;  /* Push the input area to the bottom */
+/* ChatWindow.module.css or your custom CSS file */
+.messageBlock {
   display: flex;
+  flex-direction: column; 
+  align-items: flex-start; /* Aligns messages to the left by default */
+  margin-bottom: 10px; /* Space between each message block */
 }
-  
+
+.messageBlock.me {
+  align-items: flex-end; /* Aligns your messages to the right */
+}
+
+.senderName {
+  font-size: 0.85em;
+  color: #6c757d;
+  margin-bottom: 4px;
+}
+
+.messageContent {
+  padding: 10px;
+  background-color: #e7f5ff; /* Example for assistant messages */
+  border-radius: 5px;
+  border: 1px solid #d0eaff;
+  max-width: 80%;
+  word-wrap: break-word;
+}
+
+.messageContent.me {
+  background-color: #d1e7dd; /* Different background for your messages */
+}

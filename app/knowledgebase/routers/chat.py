@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, WebSocket, WebSocketDisconnect
 from .. import database, schemas
 from ..dependencies import get_chroma_client
 from ..api.retriever import create_retriever
@@ -31,20 +31,31 @@ async def get_by_kbid(kb_id:int, db: AsyncSession= Depends(get_db)):
         c = await chat.create(schemas.CreateChat(chat_name = kb_name, kb_id=kb_id), db)
     return schemas.ShowChat(chat_name=c.chat_name, kb_id= c.kb_id, id = c.id)
 
-
-@router.post('/{id}')
 # id is the uuid for chat session with kb_id
-async def post(request:schemas.ChatMessage, chroma_client = Depends(get_chroma)):
-    chain = await get_retriever(kb_id, chroma_client, db)
-    res = await chain.ainvoke(
-        {"input": request.msg},
-        config={
-            "configurable": {"session_id":id}
-    })
-    return res
+async def post(websocket: WebSocket, id: str):
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_text()
+            echo_message = f"Echo:{data}"
+            await websocket.send_text(echo_message)
+            print(f"Sent: {echo_message}")
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+    finally:
+        if not websocket.client_state == "DISCONNECTED":
+            await websocket.close(code=1000)
+            print(f"Client {id} disconnected")
+    # chain = await get_retriever(kb_id, chroma_client, db)
+    # res = await chain.ainvoke(
+    #     {"input": request.msg},
+    #     config={
+    #         "configurable": {"session_id":id}
+    # })
+    # return res
 
 
-@router.get('/{kb_id}', status_code = status.HTTP_200_OK)
+#@router.get('/{kb_id}', status_code = status.HTTP_200_OK)
 async def get_retriever(kb_id: int, chroma_client = Depends(get_chroma), db = Depends(get_db)):
     #check if a session with this kb_id already exists, if so load the history
     collection_name = f"{COLLECTION_PREFIX}{kb_id}"
