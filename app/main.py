@@ -9,12 +9,12 @@ from dotenv import load_dotenv
 import os
 import logging
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 async def onStart(app: FastAPI):
     async with engine.begin() as conn:
 
-        #await conn.run_sync(models.Base.metadata.drop_all)
+        await conn.run_sync(models.Base.metadata.drop_all)
         await conn.run_sync(models.Base.metadata.create_all)
 
     app.state.chroma = chromadb.HttpClient(host="localhost", port=8080)
@@ -36,8 +36,7 @@ app = FastAPI(lifespan=lifespan)
 
 origins=[
     "http://127.0.0.1:3000",
-    "http://localhost:3000",
-    "http://localhost:8000"
+    "http://localhost:3000"
 ]
 
 app.add_middleware(
@@ -52,3 +51,12 @@ app.include_router(knowledgebase.router)
 app.include_router(knowledgebasefile.router)
 app.include_router(chat.router)
 app.websocket("/chat/{id}/ws")(chat.post)
+
+from starlette.requests import Request
+
+@app.middleware("http")
+async def log_request(request: Request, call_next):
+    response = await call_next(request)
+    print(f"Request headers: {request.headers}")
+    print(f"Response headers: {response.headers}")
+    return response

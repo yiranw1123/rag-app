@@ -8,6 +8,7 @@ from typing import List
 from ..repository import chat
 from ..routers import knowledgebase
 from sqlalchemy.ext.asyncio import AsyncSession
+import uuid
 
 
 router = APIRouter(prefix="/chat", tags = ['chat'])
@@ -30,6 +31,11 @@ async def get_by_kbid(kb_id:int, db: AsyncSession= Depends(get_db)):
         # chat id will be the key to redis msg store
         c = await chat.create(schemas.CreateChat(chat_name = kb_name, kb_id=kb_id), db)
     return schemas.ShowChat(chat_name=c.chat_name, kb_id= c.kb_id, id = c.id)
+
+@router.get('/{id}', response_model=schemas.ShowChat)
+async def get_by_id(id: uuid.UUID, db: AsyncSession= Depends(get_db)):
+    c= await chat.get_by_id(id, db)
+    return schemas.ShowChat(chat_name=c.chat_name, id = c.id, kb_id=c.kb_id)
 
 # id is the uuid for chat session with kb_id
 async def post(websocket: WebSocket, id: str):

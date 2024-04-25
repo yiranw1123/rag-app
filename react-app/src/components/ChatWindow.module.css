@@ -1,7 +1,8 @@
 /* ChatWindow.module.css */
 .chatWindow {
   width: 100%;
-  max-width: 1200px; /* Adjust width as needed */
+  max-width: 80vw; /* Adjust width as needed */
+  height: 100vh;
   margin: 0 auto;
   background-color: #f9f9f9;
   border: 1px solid #ddd;
@@ -10,14 +11,15 @@
 }
 
 .chatMessages {
-  height: 750px; /* Adjust height as needed */
-  overflow-y: auto; /* Enables vertical scrolling */
+  display: flex;
+  flex-direction: column;
+  height: 80vh;
+  overflow-y: auto;
   padding: 10px;
   background-color: #fff;
   border-bottom: 1px solid #ddd;
 }
 
-/* ChatWindow.module.css or your custom CSS file */
 .messageBlock {
   display: flex;
   flex-direction: column; 
@@ -46,4 +48,16 @@
 
 .messageContent.me {
   background-color: #d1e7dd; /* Different background for your messages */
+}
+
+.chatWindow h3 {
+  margin-right: 50px;    /* Adds some spacing between the h2 and the svg */
+  font-size: 18px; 
+  margin-left: 10px;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.submitButton{
+  margin-top: 10px;
 }

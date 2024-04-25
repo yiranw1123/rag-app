@@ -3,8 +3,9 @@ import styles from "./ChatWindow.module.css";
 import useWebSocket from 'react-use-websocket';
 
 
-const ChatWindow = (activeChat) => {
-  const socketUrl = `ws://127.0.0.1:8000/chat/${activeChat.activeChat}/ws`;
+const ChatWindow = ({activeChat}) => {
+  const {id, chat_name} = activeChat;
+  const socketUrl = `ws://127.0.0.1:8000/chat/${id}/ws`;
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
 
@@ -29,8 +30,16 @@ const ChatWindow = (activeChat) => {
     setMessage(''); // Clear input
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleSendMessage();
+    }
+  };
+
   return(
     <div className = {styles.chatWindow}>
+      <h3>{chat_name}</h3>
       <div className={styles.chatMessages}>
         {messages.map((msg, index) => (
           <div key={index} className={`${styles.messageBlock} ${msg.sender === 'me' ? styles.me : ''}`}>
@@ -41,12 +50,8 @@ const ChatWindow = (activeChat) => {
           </div>
         ))}
       </div>
-
-
-
-
-      <div>
-        <textarea className="form-control" id="chatInput" rows="3" onChange={(e) => setMessage(e.target.value)} value={message}  placeholder="Type your question here..."></textarea>
+      <textarea className="form-control" id="chatInput" rows="4" onChange={(e) => setMessage(e.target.value)} value={message} placeholder="Type your question here..." onKeyDown={handleKeyDown}></textarea>
+      <div className={styles.submitButton}>
         <button type="button" className="btn btn-primary" onClick={handleSendMessage}><i className="bi bi-send"></i> (Send)</button>
       </div>
     </div>

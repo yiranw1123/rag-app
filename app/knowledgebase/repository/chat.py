@@ -1,6 +1,7 @@
 from .. import models, schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
+import uuid
 
 async def get_all(db: AsyncSession):
     stmt = select(models.Chat).order_by(desc(models.Chat.created))
@@ -17,6 +18,12 @@ async def create(request: schemas.CreateChat, db: AsyncSession):
 
 async def get_by_kbid(kb_id: int, db: AsyncSession):
     stmt = select(models.Chat).where(models.Chat.kb_id == kb_id)
+    results = await db.execute(stmt)
+    chat = results.scalars().first()
+    return chat
+
+async def get_by_id(id: uuid.UUID, db: AsyncSession):
+    stmt = select(models.Chat).where(models.Chat.id == id)
     results = await db.execute(stmt)
     chat = results.scalars().first()
     return chat
