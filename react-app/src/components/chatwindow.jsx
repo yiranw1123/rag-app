@@ -52,7 +52,7 @@ const ChatWindow = ({activeChat}) => {
       </div>
       <textarea className="form-control" id="chatInput" rows="4" onChange={(e) => setMessage(e.target.value)} value={message} placeholder="Type your question here..." onKeyDown={handleKeyDown}></textarea>
       <div className={styles.submitButton}>
-        <button type="button" className="btn btn-primary" onClick={handleSendMessage}><i className="bi bi-send"></i> (Send)</button>
+        <button type="button" className="btn btn-primary" onClick={handleSendMessage}><i className="bi bi-send"></i> (Enter)</button>
       </div>
     </div>
   );

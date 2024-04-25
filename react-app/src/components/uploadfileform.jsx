@@ -1,5 +1,5 @@
 import React, {useRef, useState} from 'react';
-import api from '../api';
+import {uploadFile} from '../api';
 
 const UploadFileForm = ({data, onFormSubmit, jumpToDetails}) => {
   const [selectedKB, setSelectedKB] = useState("");
@@ -29,12 +29,6 @@ const UploadFileForm = ({data, onFormSubmit, jumpToDetails}) => {
       filesData.append('files', file);
     });
 
-    const config = {
-      headers: {
-        'content-type': 'multipart/form-data',
-      }
-    };
-
     const kbId = document.getElementById("kb-dropdown").value; 
 
     //reset input files for next upload
@@ -45,12 +39,7 @@ const UploadFileForm = ({data, onFormSubmit, jumpToDetails}) => {
     setIsUploading(true);
 
     try{
-      const response =  await api.post(`/knowledgebase/${kbId}/upload/`, filesData, config);
-      if(response.status === 201){
-        console.log('Successfully uploaded files to server');
-      } else {
-        throw new Error(`Unexpected status code: ${response.status} `);
-      }
+      await uploadFile(kbId, filesData);
     } catch (error) {
       console.error("Error uploading files: ", error);
       throw error;

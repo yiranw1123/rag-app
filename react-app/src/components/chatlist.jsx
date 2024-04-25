@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import api from '../api';
+import {fetchAllKB, fetchChats, createChat} from '../api';
 import styles from "./ChatList.module.css";
 import { useNavigate } from "react-router-dom";
 
@@ -10,36 +10,28 @@ const ChatList = ({setActiveChat}) => {
   const [showForm, setShowForm] = useState(false);
   const [knowledgebase, setKnowledgebase] = useState([]);
 
+  const resetSelection = () => {
+    setSelectedKB("");
+  }
+
   const goToChat = async () =>{
     try{
-      const response = await api.get(`/chat/kb_id/${selectedKB}`);
-      if(response.status !== 200){
-        throw new Error("Network response was not ok " + response.statusText);
-      }
-      const data = await response.data;
+      const data = await createChat(selectedKB);
       navigate(`/chat/${data.id}`);
     } catch (error) {
       console.error("Error fetching chat:", error);
     }finally{
+      resetSelection();
       setShowForm(false);
-      await fetchChats();
+      data = await fetchChats();
+      setChats(data);
     }
   };
 
   const handleCreateChat = async () => {
-    await fetchKnowledgebase();
+    data = await fetchAllKB();
+    setKnowledgebase(data);
     setShowForm(!showForm);  // Toggle the visibility of the form
-  };
-
-  const fetchKnowledgebase = async() =>{
-    const response = await api.get('/knowledgebase/');
-    setKnowledgebase(response.data);
-  };
-
-
-  const fetchChats = async() => {
-    const response = await api.get('/chat/');
-    setChats(response.data);
   };
 
   const onSelectChat = (chat) => {

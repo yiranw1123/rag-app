@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import api from '../api'
+import {fetchKBFiles, fetchAllKB, deleteKB, deleteKBFile} from '../api'
 import CreateKBForm from '../components/createkbform'
 import styles from "./App.module.css";
 import KBTable from '../components/kbtable'
@@ -13,14 +13,13 @@ const App = () => {
   const [files, setFiles] = useState([]);
 
   const fetchFiles = async(kbId) =>{
-    const response = await api.get(`/knowledgebase/${kbId}/files/`);
-    console.log("successuflly fetched files");
-    setFiles(response.data);
+    const files = await fetchKBFiles(kbId);
+    setFiles(files);
   };
 
   const fetchKnowledgebase = async() =>{
-    const response = await api.get('/knowledgebase/');
-    setKnowledgebase(response.data);
+    const kbs = await fetchAllKB();
+    setKnowledgebase(kbs);
   };
 
   useEffect(() => {
@@ -34,11 +33,7 @@ const App = () => {
   };
 
   const handleDelete = async(kbId) => {
-    try{
-      await api.delete(`/knowledgebase/${kbId}`);
-    }catch (error) {
-      console.error("Error deleting KB:", error);
-    }
+    await deleteKB(kbId);
     try{
       await fetchKnowledgebase();
     }catch (error) {
@@ -47,12 +42,7 @@ const App = () => {
   };
 
   const handleFileDelete = async(fileId, kbId) => {
-    try{
-      console.log(fileId);
-      await api.delete(`/knowledgebasefile/${fileId}`);
-    }catch (error) {
-      console.error("Error deleting file:", error);
-    }
+    await deleteKBFile(fileId, kbId);
     try{
       await fetchFiles(kbId);
     }catch (error) {

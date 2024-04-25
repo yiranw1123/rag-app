@@ -3,7 +3,7 @@ import ChatWindow from '../components/chatwindow';
 import styles from "./Chat.module.css";
 import React, { useEffect, useState } from 'react';
 import {useParams} from 'react-router-dom';
-import api from '../api';
+import {fetchChatById} from '../api';
 
 
 const Chat = () =>{
@@ -12,13 +12,13 @@ const Chat = () =>{
   const [activeChat, setActiveChat] = useState(null);
 
   useEffect(() => {
-    const fetchChatById = async (id) => {
+    const fetchChat = async (id) => {
       if(id) {
-        const response = await api.get(`/chat/${id}`);
-        setActiveChat(response.data);
+        const chatDetail = await fetchChatById(id);
+        setActiveChat(chatDetail);
       }
     };
-    fetchChatById(id);
+    fetchChat(id);
   },[id]);
 
   return(

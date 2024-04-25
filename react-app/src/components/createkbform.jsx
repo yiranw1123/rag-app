@@ -1,5 +1,5 @@
 import React, { useRef, useState} from 'react';
-import api from '../api';
+import {createKB, uploadFile} from '../api';
 
 const CreateKBForm = ({onFormSubmit})=> {
   const initialForm = {
@@ -24,20 +24,9 @@ const CreateKBForm = ({onFormSubmit})=> {
     setFiles([...event.target.files]);
   }
 
-  const createKnowledgeBase = async (event) => {
-    try {
-      const response = await api.post('/knowledgebase/', form);
-      if(response.status === 201){
-        const kbId = response.data.kb_id;
-        console.log(`Successfully created knowledgebase with id ${kbId}`);
-        return kbId;
-      } else{
-        throw new Error(`Unexpected status code: ${response.status} `);
-      }
-    } catch (error) {
-      console.error("Error creating knowledgebase: ", error);
-      throw error; // Rethrow to handle in the caller function
-    }
+  const createKnowledgeBase = async () => {
+    const kbId = await createKB(form);
+    return kbId;
   }
 
   const handleMultipleSubmit = async (event) =>{
@@ -50,25 +39,14 @@ const CreateKBForm = ({onFormSubmit})=> {
 
     setIsCreating(true);
 
-    const kbId = await createKnowledgeBase(form);
+    const kbId = await createKnowledgeBase();
     const filesData = new FormData();
     files.forEach((file, index) => {
       filesData.append('files', file);
     });
-
-    const config = {
-      headers: {
-        'content-type': 'multipart/form-data',
-      },
-    };
     
     try{
-      const response =  await api.post(`/knowledgebase/${kbId}/upload/`, filesData, config);
-      if(response.status === 201){
-        console.log('Successfully uploaded files to server');
-      } else {
-        throw new Error(`Unexpected status code: ${response.status} `);
-      }
+      await uploadFile(kbId, filesData);
     } catch (error) {
       console.error("Error uploading files: ", error);
       throw error;
