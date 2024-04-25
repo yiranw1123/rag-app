@@ -87,7 +87,7 @@ export const fetchChatById = async (id) => {
 
 export const createChat = async (kbId) => {
     try{
-        response = await api.get(`/chat/kb_id/${kbId}`);
+        const response = await api.get(`/chat/kb_id/${kbId}`);
         if(response.status !== 200){
             throw new Error("Network response was not ok " + response.statusText);
         }
@@ -100,4 +100,4 @@ export const createChat = async (kbId) => {
 export const fetchChats = async() => {
     const response = await api.get('/chat/');
     return response.data;
-  };
+};

@@ -23,14 +23,15 @@ const ChatList = ({setActiveChat}) => {
     }finally{
       resetSelection();
       setShowForm(false);
-      data = await fetchChats();
+      const data = await fetchChats();
+      console.log(data);
       setChats(data);
     }
   };
 
   const handleCreateChat = async () => {
-    data = await fetchAllKB();
-    setKnowledgebase(data);
+    const kbs = await fetchAllKB();
+    setKnowledgebase(kbs);
     setShowForm(!showForm);  // Toggle the visibility of the form
   };
 
@@ -40,7 +41,16 @@ const ChatList = ({setActiveChat}) => {
   };
 
   useEffect(() =>{
-    fetchChats();
+    const fetchAndSetChats = async () => {
+      try{
+        const data = await fetchChats();
+        console.log(data);
+        setChats(data);
+      } catch(error){
+        console.error('Failed to fetch chats:', error);
+      }
+    };
+    fetchAndSetChats();
   }, []);
 
   return (
