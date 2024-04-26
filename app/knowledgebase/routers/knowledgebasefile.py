@@ -6,7 +6,6 @@ from typing import List
 from uuid import UUID
 from ..store.ChromaStore import delete_from_collection
 from ..dependencies import get_chroma_client
-from ..store.RedisStore import RedisStore
 from ..store.utils.RedisStoreUtils import handle_file_delete_in_redis
 from ..constants import COLLECTION_PREFIX
 

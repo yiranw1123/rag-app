@@ -1,23 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./ChatWindow.module.css";
 import useWebSocket from 'react-use-websocket';
 
 
 const ChatWindow = ({activeChat}) => {
   const {id, chat_name} = activeChat;
-  const socketUrl = `ws://127.0.0.1:8000/chat/${id}/ws`;
+  const [socketUrl, setSocketUrl] = useState(`ws://127.0.0.1:8000/chat/${id}/ws`);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
 
+  useEffect(() => {
+    // Update the WebSocket URL when activeChat.id changes
+    setSocketUrl(`ws://127.0.0.1:8000/chat/${id}/ws`);
+  }, [activeChat]); 
+
   const {sendMessage, lastMessage, readyState} = useWebSocket(socketUrl,
     {
-      onOpen: () => console.log("Connected to WebSocket"),
-      onClose: () => console.log("Disconnected from WebSocket"),
+      onOpen: () => console.log(`Connected to WebSocket ${socketUrl}`),
+      onClose: () => console.log(`Disconnected from WebSocket ${socketUrl}`),
       shouldReconnect: (closeEvent) => true,
       onMessage: (event) => {
         if(event.data){
-          console.log("Received msg: ", event.data);
-          setMessages(prevMessages => [...prevMessages, {sender: "assistant", text:event.data}]);
+          try{
+            const jsonData = JSON.parse(event.data);
+            console.log("Received JSON message: ", jsonData);
+            setMessages(prevMessages => [...prevMessages, {sender: jsonData.type === "ai" ? "assistant" : "me", text: jsonData.data.content}]);
+          } catch (error){
+            console.log("Received msg: ", event.data);
+            setMessages(prevMessages => [...prevMessages, {sender: "assistant", text: event.data}]);
+          }
         }
       },
     }

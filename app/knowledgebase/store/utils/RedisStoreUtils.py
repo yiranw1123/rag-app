@@ -1,6 +1,5 @@
-from .. import RedisStore
+from ..RedisStore import RedisStore
 from typing import List
-import uuid
 from ...constants import COLLECTION_PREFIX
 import asyncio
 
@@ -14,3 +13,10 @@ async def handle_multiple_file_delete_in_redis(kb_id: int, file_ids: List[str]):
     for fid in file_ids:
         tasks = [handle_file_delete_in_redis(kb_id, fid)]
         await asyncio.gather(tasks)
+    
+
+async def get_chat_history(chat_id: str):
+    namespace = f"message_store"
+    redis = RedisStore(namespace)
+    history = await redis._client.lrange(redis.get_namespaced_key(chat_id), 0 , -1)
+    return history

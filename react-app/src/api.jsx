@@ -61,43 +61,43 @@ export const deleteKBFile = async(fileId, kbId) => {
 };
 
 export const uploadFile = async (kbId, filesData) =>{
-    try{
-        const config = {
-            headers: {
-              'content-type': 'multipart/form-data',
-            }
-        };
-        const response =  await api.post(`/knowledgebase/${kbId}/upload/`, filesData, config);
-        if(response.status === 201){
-          console.log('Successfully uploaded files to server');
-        } else {
-          throw new Error(`Unexpected status code: ${response.status} `);
+  try{
+    const config = {
+        headers: {
+          'content-type': 'multipart/form-data',
         }
-      } catch (error) {
-        console.error("Error uploading files: ", error);
-        throw error;
-      } 
+    };
+    const response =  await api.post(`/knowledgebase/${kbId}/upload/`, filesData, config);
+    if(response.status === 201){
+      console.log('Successfully uploaded files to server');
+    } else {
+      throw new Error(`Unexpected status code: ${response.status} `);
+    }
+  } catch (error) {
+    console.error("Error uploading files: ", error);
+    throw error;
+  } 
 };
 
 //Chat CRUD
 export const fetchChatById = async (id) => {
-    const response = await api.get(`/chat/${id}`);
-    return response.data;
+  const response = await api.get(`/chat/${id}`);
+  return response.data;
 };
 
 export const createChat = async (kbId) => {
-    try{
-        const response = await api.get(`/chat/kb_id/${kbId}`);
-        if(response.status !== 200){
-            throw new Error("Network response was not ok " + response.statusText);
-        }
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching chat:", error);
-    }
+  try{
+      const response = await api.get(`/chat/kb_id/${kbId}`);
+      if(response.status !== 200){
+          throw new Error("Network response was not ok " + response.statusText);
+      }
+      return response.data;
+  } catch (error) {
+      console.error("Error fetching chat:", error);
+  }
 };
 
 export const fetchChats = async() => {
-    const response = await api.get('/chat/');
-    return response.data;
+  const response = await api.get('/chat/');
+  return response.data;
 };

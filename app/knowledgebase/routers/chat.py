@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, status, Depends, WebSocket
 from .. import database, schemas
 from ..dependencies import get_chroma_client
 from ..api.retriever import create_retriever
@@ -9,6 +9,8 @@ from ..repository import chat
 from ..routers import knowledgebase
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
+from ..store.utils.RedisStoreUtils import get_chat_history
+import json
 
 
 router = APIRouter(prefix="/chat", tags = ['chat'])
@@ -34,56 +36,52 @@ async def get_by_kbid(kb_id:int, db: AsyncSession= Depends(get_db)):
 
 @router.get('/{id}', response_model=schemas.ShowChat)
 async def get_by_id(id: uuid.UUID, db: AsyncSession= Depends(get_db)):
-    c= await chat.get_by_id(id, db)
+    c = await chat.get_by_id(id, db)
     return schemas.ShowChat(chat_name=c.chat_name, id = c.id, kb_id=c.kb_id)
 
+async def get_resp_from_retriever(id, retriever, msg):
+    res = await retriever.ainvoke(
+        {"input": msg},
+        config={
+            "configurable": {"session_id":id}
+    })
+    answer = res['answer']
+    return answer
+
+@router.get('/history/{chat_id}')
+async def fetch_chat_history(chat_id = str):
+    history = await get_chat_history(chat_id)
+    messages = [message.decode('utf-8') for message in history]
+    return messages
+
 # id is the uuid for chat session with kb_id
-async def post(websocket: WebSocket, id: str):
+async def post(websocket: WebSocket, id: str, db: AsyncSession= Depends(get_db)):
     await websocket.accept()
+
+    details = await chat.get_by_id(uuid.UUID(id), db)
+    kb_id = details.kb_id
+    retriever = await get_retriever(kb_id, websocket.app.state.chroma)
+    history = await fetch_chat_history(id)
+    if history:
+        for msg in history:
+            await websocket.send_json(json.loads(msg))
     try:
         while True:
             data = await websocket.receive_text()
-            echo_message = f"Echo:{data}"
-            await websocket.send_text(echo_message)
-            print(f"Sent: {echo_message}")
+            answer = await get_resp_from_retriever(id, retriever, data)
+            await websocket.send_text(answer)
     except Exception as e:
         print(f"WebSocket error: {e}")
     finally:
         if not websocket.client_state == "DISCONNECTED":
             await websocket.close(code=1000)
             print(f"Client {id} disconnected")
-    # chain = await get_retriever(kb_id, chroma_client, db)
-    # res = await chain.ainvoke(
-    #     {"input": request.msg},
-    #     config={
-    #         "configurable": {"session_id":id}
-    # })
-    # return res
 
-
-#@router.get('/{kb_id}', status_code = status.HTTP_200_OK)
-async def get_retriever(kb_id: int, chroma_client = Depends(get_chroma), db = Depends(get_db)):
+@router.get('/{kb_id}', status_code = status.HTTP_200_OK)
+async def get_retriever(kb_id: int, chroma_client = Depends(get_chroma)):
     #check if a session with this kb_id already exists, if so load the history
     collection_name = f"{COLLECTION_PREFIX}{kb_id}"
     retriever = await create_retriever(collection_name, chroma_client)
     chain = QAChain.get_chain(retriever)
     return chain
-
-    # question="Where is the traveler's destination?"
-    
-    # res = await chain.ainvoke(
-    # {"input": question},
-    # config={
-    #     "configurable": {"session_id":session_id}
-    # }
-    # )
-    # print(res)
-
-    # res = retriever.vectorstore.similarity_search(question)
-    # for i in range(len(res)):
-    #     print("Item ", i, ": " , res[i])
-
-    # docs = await retriever.aget_relevant_documents(question)
-    # for i in range(len(docs)):
-    #     print("Doc ", i, ": " , docs[i])
     
