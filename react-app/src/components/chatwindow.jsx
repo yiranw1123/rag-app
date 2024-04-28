@@ -1,18 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import styles from "./ChatWindow.module.css";
 import useWebSocket from 'react-use-websocket';
+import { useActiveChat } from '../context/ActiveChatContext';
 
-
-const ChatWindow = ({activeChat}) => {
-  const {id, chat_name} = activeChat;
-  const [socketUrl, setSocketUrl] = useState(`ws://127.0.0.1:8000/chat/${id}/ws`);
+const ChatWindow = () => {
+  const {activeChat} = useActiveChat();
+  const [socketUrl, setSocketUrl] = useState('');
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
     // Update the WebSocket URL when activeChat.id changes
-    setSocketUrl(`ws://127.0.0.1:8000/chat/${id}/ws`);
-  }, [activeChat]); 
+    if(activeChat?.id){
+      setSocketUrl(`ws://127.0.0.1:8000/chat/${activeChat?.id}/ws`);
+      setMessage('');
+      setMessages([]);
+    }
+  }, [activeChat?.id]); 
 
   const {sendMessage, lastMessage, readyState} = useWebSocket(socketUrl,
     {
@@ -48,9 +52,11 @@ const ChatWindow = ({activeChat}) => {
     }
   };
 
+  if (!socketUrl) return <div>Loading chat details...</div>; 
+
   return(
     <div className = {styles.chatWindow}>
-      <h3>{chat_name}</h3>
+      <h3>{activeChat?.chat_name}</h3>
       <div className={styles.chatMessages}>
         {messages.map((msg, index) => (
           <div key={index} className={`${styles.messageBlock} ${msg.sender === 'me' ? styles.me : ''}`}>

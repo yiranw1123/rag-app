@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
-import {fetchAllKB, fetchChats, createChat} from '../api';
+import {useContext, useEffect, useState } from 'react';
+import {fetchAllKB, fetchChats, createChat, fetchChatById} from '../api';
 import styles from "./ChatList.module.css";
 import { useNavigate } from "react-router-dom";
+import { useActiveChat } from '../context/ActiveChatContext';
 
-const ChatList = ({setActiveChat}) => {
+const ChatList = () => {
+  const {activeChat, setActiveChat} = useActiveChat();
+  console.log(activeChat);
   const [selectedKB, setSelectedKB] = useState("");
   const navigate = useNavigate();
   const [chats, setChats] = useState([]);
@@ -14,6 +17,15 @@ const ChatList = ({setActiveChat}) => {
     setSelectedKB("");
   }
 
+  const fetchChatList = async () => {
+    try{
+      const data = await fetchChats();
+      setChats(data);
+    } catch(error){
+      console.error('Failed to fetch chats:', error);
+    }
+  };
+
   const goToChat = async () =>{
     try{
       const data = await createChat(selectedKB);
@@ -23,9 +35,7 @@ const ChatList = ({setActiveChat}) => {
     }finally{
       resetSelection();
       setShowForm(false);
-      const data = await fetchChats();
-      console.log(data);
-      setChats(data);
+      await fetchChatList();
     }
   };
 
@@ -35,22 +45,14 @@ const ChatList = ({setActiveChat}) => {
     setShowForm(!showForm);  // Toggle the visibility of the form
   };
 
-  const onSelectChat = (chat) => {
-    navigate(`/chat/${chat.id}`)
-    setActiveChat(chat);
+  const onSelectChat = async (chat) => {
+    navigate(`/chat/${chat.id}`);
+    const chatDetail = await fetchChatById(chat.id);
+    console.log("chat details: ", chatDetail);
   };
 
   useEffect(() =>{
-    const fetchAndSetChats = async () => {
-      try{
-        const data = await fetchChats();
-        console.log(data);
-        setChats(data);
-      } catch(error){
-        console.error('Failed to fetch chats:', error);
-      }
-    };
-    fetchAndSetChats();
+    fetchChatList();
   }, []);
 
   return (

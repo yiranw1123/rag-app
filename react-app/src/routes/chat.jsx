@@ -4,11 +4,10 @@ import styles from "./Chat.module.css";
 import React, { useEffect, useState } from 'react';
 import {useParams} from 'react-router-dom';
 import {fetchChatById} from '../api';
-
+import { ActiveChatContext } from '../context/ActiveChatContext';
 
 const Chat = () =>{
   const {id} = useParams();
-  //chat session id
   const [activeChat, setActiveChat] = useState(null);
 
   useEffect(() => {
@@ -19,16 +18,14 @@ const Chat = () =>{
       }
     };
     fetchChat(id);
-  },[id]);
+  },[id, setActiveChat]);
 
   return(
     <div className={styles.chatContainer}>
-      {activeChat ? (
-        <>
-          <ChatList setActiveChat={setActiveChat}/>
-          <ChatWindow activeChat={activeChat}/>
-        </>
-      ):(<p>Loading</p>)}
+      <ActiveChatContext.Provider value = {{activeChat, setActiveChat}}>
+        <ChatList/>
+        <ChatWindow/>
+      </ActiveChatContext.Provider>
     </div>
   );
 };
