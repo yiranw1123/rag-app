@@ -77,7 +77,6 @@ async def post(websocket: WebSocket, id: str, db: AsyncSession= Depends(get_db))
             await websocket.close(code=1000)
             print(f"Client {id} disconnected")
 
-@router.get('/{kb_id}', status_code = status.HTTP_200_OK)
 async def get_retriever(kb_id: int, chroma_client = Depends(get_chroma)):
     #check if a session with this kb_id already exists, if so load the history
     collection_name = f"{COLLECTION_PREFIX}{kb_id}"

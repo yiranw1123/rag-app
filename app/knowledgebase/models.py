@@ -16,6 +16,7 @@ class KnowledgeBase(Base):
     updated: Mapped[datetime] = mapped_column(default=datetime.now,onupdate=datetime.now)
     files: Mapped[List["KnowledgeBaseFile"]] = relationship(cascade="all, delete, delete-orphan", lazy = "selectin")
     collection_name: Mapped[Optional[str]] = mapped_column(String(255), default= None)
+    chat: Mapped["Chat"] = relationship(cascade="all, delete, delete-orphan", lazy = "selectin")
 
     def __repr__(self) -> str:
         return f"KnowledgeBase(id={self.id!r}, name={self.name!r}, \
@@ -30,7 +31,7 @@ class KnowledgeBaseFile(Base):
     file_name:Mapped[str] = mapped_column(String(255))
     created: Mapped[datetime] = mapped_column(default=datetime.now)
     updated: Mapped[datetime] = mapped_column(default=datetime.now,onupdate=datetime.now)
-    chunks = relationship("FileChunk", cascade="all, delete, delete-orphan", lazy = "selectin")
+    chunks = relationship("FileChunk", cascade="all, delete, delete-orphan", lazy = "selectin", back_populates= "file")
 
     def __repr__(self) -> str:
         return f"KnowledgeBaseFile(id={self.id!r}, file_name={self.file_name!r}, kb_id={self.kb_id!r})"
@@ -40,7 +41,7 @@ class FileChunk(Base):
     chunk_id: Mapped[Uuid] = mapped_column(Uuid, primary_key=True)
     file_id: Mapped[Uuid] = mapped_column(Uuid, ForeignKey("knowledge_base_file.id"))
     created: Mapped[datetime] = mapped_column(default = datetime.now)
-    file = relationship("KnowledgeBaseFile", back_populates= "chunks")
+    file = relationship("KnowledgeBaseFile", back_populates= "chunks", lazy = "selectin")
 
 class Chat(Base):
     __tablename__ = "chat"
