@@ -1,12 +1,14 @@
-import {useContext, useEffect, useState } from 'react';
+import {useEffect, useState } from 'react';
 import {fetchAllKB, fetchChats, createChat, fetchChatById} from '../api';
 import styles from "./ChatList.module.css";
 import { useNavigate } from "react-router-dom";
-import { useActiveChat } from '../context/ActiveChatContext';
+import { useDispatch, useSelector } from "react-redux";
+import { fetchActiveChat } from "../features/activeChatState";
 
 const ChatList = () => {
-  const {activeChat, setActiveChat} = useActiveChat();
-  console.log(activeChat);
+  const dispatch = useDispatch();
+
+  const activeChat = useSelector(state => state.activeChat.activeChat);
   const [selectedKB, setSelectedKB] = useState("");
   const navigate = useNavigate();
   const [chats, setChats] = useState([]);
@@ -47,7 +49,7 @@ const ChatList = () => {
 
   const onSelectChat = async (chat) => {
     navigate(`/chat/${chat.id}`);
-    const chatDetail = await fetchChatById(chat.id);
+    const chatDetail = dispatch(fetchActiveChat(chat.id));
     console.log("chat details: ", chatDetail);
   };
 

@@ -1,31 +1,31 @@
 import ChatList from '../components/chatlist';
 import ChatWindow from '../components/chatwindow';
 import styles from "./Chat.module.css";
-import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import React, { useEffect } from 'react';
 import {useParams} from 'react-router-dom';
-import {fetchChatById} from '../api';
-import { ActiveChatContext } from '../context/ActiveChatContext';
+import { fetchActiveChat } from "../features/activeChatState";
 
 const Chat = () =>{
+  const dispatch = useDispatch();
   const {id} = useParams();
-  const [activeChat, setActiveChat] = useState(null);
+  const activeChat = useSelector(state =>state.activeChat.activeChat);
+  console.log(activeChat);
+  const isLoading = useSelector(state => state.activeChat.isLoading);
 
   useEffect(() => {
-    const fetchChat = async (id) => {
+    const loadChat = async () =>{
       if(id) {
-        const chatDetail = await fetchChatById(id);
-        setActiveChat(chatDetail);
+        dispatch(fetchActiveChat(id));
       }
     };
-    fetchChat(id);
-  },[id, setActiveChat]);
+    loadChat();
+  }, [id, dispatch]);
 
   return(
     <div className={styles.chatContainer}>
-      <ActiveChatContext.Provider value = {{activeChat, setActiveChat}}>
-        <ChatList/>
-        <ChatWindow/>
-      </ActiveChatContext.Provider>
+      <ChatList/>
+      <ChatWindow/>
     </div>
   );
 };

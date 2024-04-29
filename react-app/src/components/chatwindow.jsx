@@ -1,10 +1,11 @@
 import { useState, useEffect, useContext } from "react";
 import styles from "./ChatWindow.module.css";
 import useWebSocket from 'react-use-websocket';
-import { useActiveChat } from '../context/ActiveChatContext';
+import { useSelector, useDispatch } from 'react-redux';
 
 const ChatWindow = () => {
-  const {activeChat} = useActiveChat();
+  const dispatch = useDispatch();
+  const activeChat = useSelector(state => state.activeChat.activeChat);
   const [socketUrl, setSocketUrl] = useState('');
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
