@@ -1,8 +1,18 @@
 import { useState, useEffect, useContext } from "react";
 import styles from "./ChatWindow.module.css";
 import { useSelector, useDispatch } from 'react-redux';
-import { selectActiveChatId, selectChatHistoryById, fetchChatHistory} from "../features/chatState";
-import { sendMessage, websocketConnecting, websocketDisconnect } from "../features/webSocketState";
+import { 
+  selectActiveChatId,
+  selectChatHistoryById,
+  fetchChatHistory,
+  addMessage
+} from "../features/chatState";
+import { 
+  sendMessage, 
+  websocketConnecting, 
+  websocketDisconnect 
+} from "../features/webSocketState";
+
 
 const ChatWindow = () => {
   const dispatch = useDispatch();
@@ -10,16 +20,17 @@ const ChatWindow = () => {
   const activeChatId = useSelector(selectActiveChatId);
   const [message, setMessage] = useState('');
   const messages = useSelector(state => selectChatHistoryById(state, activeChatId));
-  console.log(messages);
 
   useEffect(() => {
     // Update the WebSocket URL when activeChat.id changes
     if(activeChatId){
+      console.log("Effect run for activeChatId:", activeChatId);
       dispatch(websocketConnecting({activeChatId}));
       dispatch(fetchChatHistory({activeChatId}));
     }
 
     return () => {
+      console.log("Cleaning up for activeChatId:", activeChatId);
       dispatch(websocketDisconnect());
     }
   }, [activeChatId, dispatch]); 
@@ -27,6 +38,7 @@ const ChatWindow = () => {
   const handleSendMessage =  async () => {
     dispatch(sendMessage(message));
     console.log("Sent msg: ", message);
+    dispatch(addMessage({'sender': 'me', 'text':message}));
     setMessage(''); // Clear input
   };
 

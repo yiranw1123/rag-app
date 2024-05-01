@@ -31,12 +31,11 @@ export const chatSlice = createSlice({
             state.error = action.payload;
         },
         addMessage: (state, action) => {
-            const {message} = action.payload;
             const chatId = state.activeChat.id;
             if(!state.chatHistories[chatId]){
                 state.chatHistories[chatId] = [];
             }
-            state.chatHistories[chatId].push(message);
+            state.chatHistories[chatId].push(action.payload);
         }
     }
 });

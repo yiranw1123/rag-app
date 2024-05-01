@@ -21,7 +21,7 @@ function createWebSocketChannel(socket){
         socket.onmessage = (event) => {
             const message = event.data;
             emit(websocketMessageReceived(message));
-            emit(addMessage(message));
+            emit(addMessage({'sender': 'assistant', 'text': message}));
         };
         socket.onclose = () => {
             emit(websocketClosed());
@@ -63,17 +63,19 @@ function* createConnection(socket){
 }
 
 function* watchSendMessage(socket){
+    const messageQueue = [];
     while(true){
         const {payload} = yield take(sendMessage);
-        try{
-            if(socket.readyState === WebSocket.OPEN){
-                socket.send(JSON.stringify(payload));
-                emit(addMessage(payload));
-            } else{
-                yield put(websocketError('Socket is closed'));
+        messageQueue.push(payload);
+        while(messageQueue.length > 0 && socket.readyState === WebSocket.OPEN){
+            const messageToSend = messageQueue.shift();
+            try{
+                socket.send(JSON.stringify(messageToSend));
+            } catch (error) {
+                messageQueue.unshift(messageToSend)
+                yield put(websocketError("Failed to send message"));
+                break;
             }
-        } catch (error) {
-        yield put(websocketError(error.toString()));
         }
     }
 }
@@ -85,6 +87,7 @@ function* webSocketSaga(){
             const socket = yield call(initializeWebSocket, payload.activeChatId);
             const task = yield fork(createConnection, socket);
             const sendMessageTask = yield fork(watchSendMessage, socket);
+
             yield take(websocketDisconnect);
             yield cancel(task);
             yield cancel(sendMessageTask);

@@ -2,7 +2,6 @@ import {call, put, takeEvery } from "redux-saga/effects";
 import { 
     getActiveChatSuccess,
     getActiveChatFailure,
-    addMessage,
     getHistorySuccess,
     getHistoryFailure,
 } from "../features/chatState";
@@ -16,10 +15,6 @@ function* workGetActiveChat(action){
         console.error("Failed to fetch chat data: ", error);
         yield put(getActiveChatFailure(error.message));
     }
-}
-
-function* handleAddMsgToHistory(action){
-
 }
 
 function* handleFetchChatHistory(action){
@@ -36,7 +31,6 @@ function* handleFetchChatHistory(action){
 function* chatSaga(){
     yield takeEvery('chat/fetchActiveChat', workGetActiveChat);
     yield takeEvery('chat/fetchChatHistory', handleFetchChatHistory);
-    yield takeEvery('chat/addMessage', handleAddMsgToHistory);
 }
 
 export default chatSaga;

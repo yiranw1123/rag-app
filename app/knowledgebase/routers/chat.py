@@ -66,7 +66,7 @@ async def fetch_chat_history(chat_id = str):
         # Append formatted message to the list
         formatted_messages.append({"sender": sender, "text": content})
 
-    return formatted_messages
+    return list(reversed(formatted_messages))
 
 # id is the uuid for chat session with kb_id
 async def post(websocket: WebSocket, id: str, db: AsyncSession= Depends(get_db)):
