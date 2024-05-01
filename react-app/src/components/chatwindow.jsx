@@ -1,47 +1,31 @@
 import { useState, useEffect, useContext } from "react";
 import styles from "./ChatWindow.module.css";
-import useWebSocket from 'react-use-websocket';
 import { useSelector, useDispatch } from 'react-redux';
+import { selectActiveChatId, selectChatHistoryById, fetchChatHistory} from "../features/chatState";
+import { sendMessage, websocketConnecting, websocketDisconnect } from "../features/webSocketState";
 
 const ChatWindow = () => {
   const dispatch = useDispatch();
-  const activeChat = useSelector(state => state.activeChat.activeChat);
-  const [socketUrl, setSocketUrl] = useState('');
+  const activeChat = useSelector(state => state.chat.activeChat);
+  const activeChatId = useSelector(selectActiveChatId);
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([]);
+  const messages = useSelector(state => selectChatHistoryById(state, activeChatId));
+  console.log(messages);
 
   useEffect(() => {
     // Update the WebSocket URL when activeChat.id changes
-    if(activeChat?.id){
-      setSocketUrl(`ws://127.0.0.1:8000/chat/${activeChat?.id}/ws`);
-      setMessage('');
-      setMessages([]);
+    if(activeChatId){
+      dispatch(websocketConnecting({activeChatId}));
+      dispatch(fetchChatHistory({activeChatId}));
     }
-  }, [activeChat?.id]); 
 
-  const {sendMessage, lastMessage, readyState} = useWebSocket(socketUrl,
-    {
-      onOpen: () => console.log(`Connected to WebSocket ${socketUrl}`),
-      onClose: () => console.log(`Disconnected from WebSocket ${socketUrl}`),
-      shouldReconnect: (closeEvent) => true,
-      onMessage: (event) => {
-        if(event.data){
-          try{
-            const jsonData = JSON.parse(event.data);
-            console.log("Received JSON message: ", jsonData);
-            setMessages(prevMessages => [...prevMessages, {sender: jsonData.type === "ai" ? "assistant" : "me", text: jsonData.data.content}]);
-          } catch (error){
-            console.log("Received msg: ", event.data);
-            setMessages(prevMessages => [...prevMessages, {sender: "assistant", text: event.data}]);
-          }
-        }
-      },
+    return () => {
+      dispatch(websocketDisconnect());
     }
-  );
+  }, [activeChatId, dispatch]); 
 
   const handleSendMessage =  async () => {
-    sendMessage(message);
-    setMessages(prevMessages => [...prevMessages, {sender: "me", text: message}]);
+    dispatch(sendMessage(message));
     console.log("Sent msg: ", message);
     setMessage(''); // Clear input
   };
@@ -52,8 +36,6 @@ const ChatWindow = () => {
       handleSendMessage();
     }
   };
-
-  if (!socketUrl) return <div>Loading chat details...</div>; 
 
   return(
     <div className = {styles.chatWindow}>

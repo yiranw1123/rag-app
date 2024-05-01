@@ -1,10 +1,10 @@
 import { combineReducers } from "@reduxjs/toolkit";
-import chatHistoryReducer from './chatHistoryReducer';
-import activeChatReducer from '../features/activeChatState';
+import chatReducer from '../features/chatState';
+import websocketReducer from '../features/webSocketState';
 
 const rootReducer = combineReducers({
-    activeChat: activeChatReducer,
-    chatHistories: chatHistoryReducer,
+    chat: chatReducer,
+    websocket: websocketReducer
 });
 
 export default rootReducer;

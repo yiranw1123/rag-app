@@ -101,3 +101,9 @@ export const fetchChats = async() => {
   const response = await api.get('/chat/');
   return response.data;
 };
+
+export const fetchChathistoryById = async(kbId) => {
+  const response = await api.get(`/chat/history/${kbId}`)
+  return response.data;
+
+}

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, WebSocket
+from fastapi import APIRouter, Depends, WebSocket
 from .. import database, schemas
 from ..dependencies import get_chroma_client
 from ..api.retriever import create_retriever
@@ -51,8 +51,22 @@ async def get_resp_from_retriever(id, retriever, msg):
 @router.get('/history/{chat_id}')
 async def fetch_chat_history(chat_id = str):
     history = await get_chat_history(chat_id)
-    messages = [message.decode('utf-8') for message in history]
-    return messages
+    
+    formatted_messages = []
+    for message_str in history:
+        # Assuming each message is a JSON string; parse it
+        message = json.loads(message_str)
+        
+        # Determine the sender based on the type of the message
+        sender = "assistant" if message.get("type") == "ai" else "me"
+        
+        # Extract the content of the message
+        content = message.get("data", {}).get("content", "")
+        
+        # Append formatted message to the list
+        formatted_messages.append({"sender": sender, "text": content})
+
+    return formatted_messages
 
 # id is the uuid for chat session with kb_id
 async def post(websocket: WebSocket, id: str, db: AsyncSession= Depends(get_db)):
@@ -61,13 +75,10 @@ async def post(websocket: WebSocket, id: str, db: AsyncSession= Depends(get_db))
     details = await chat.get_by_id(uuid.UUID(id), db)
     kb_id = details.kb_id
     retriever = await get_retriever(kb_id, websocket.app.state.chroma)
-    history = await fetch_chat_history(id)
-    if history:
-        for msg in history:
-            await websocket.send_json(json.loads(msg))
     try:
         while True:
             data = await websocket.receive_text()
+            print(f"echo: {data}")
             answer = await get_resp_from_retriever(id, retriever, data)
             await websocket.send_text(answer)
     except Exception as e:

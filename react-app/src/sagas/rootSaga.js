@@ -1,9 +1,11 @@
-import { all } from 'redux-saga/effects';
-import activeChatSaga from './activeChatSaga';
+import { all, fork } from 'redux-saga/effects';
+import chatSaga from './chatSaga';
+import webSocketSaga from './webSocketSaga';
 
 function * rootSaga(){
     yield all([
-        activeChatSaga(),
+        chatSaga(),
+        fork(webSocketSaga)
     ]);
 }
 export default rootSaga;
