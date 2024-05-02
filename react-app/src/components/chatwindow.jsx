@@ -20,6 +20,8 @@ const ChatWindow = () => {
   const activeChatId = useSelector(selectActiveChatId);
   const [message, setMessage] = useState('');
   const messages = useSelector(state => selectChatHistoryById(state, activeChatId));
+  // State to manage which source items are expanded
+  const [expandedSources, setExpandedSources] = useState({});
 
   useEffect(() => {
     // Update the WebSocket URL when activeChat.id changes
@@ -37,7 +39,6 @@ const ChatWindow = () => {
 
   const handleSendMessage =  async () => {
     dispatch(sendMessage(message));
-    console.log("Sent msg: ", message);
     dispatch(addMessage({'sender': 'me', 'text':message}));
     setMessage(''); // Clear input
   };
@@ -49,6 +50,14 @@ const ChatWindow = () => {
     }
   };
 
+  const toggleSource = (msgIdx, srcIdx) => {
+    const key = `${msgIdx}-${srcIdx}`;
+    setExpandedSources(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
   return(
     <div className = {styles.chatWindow}>
       <h3>{activeChat?.chat_name}</h3>
@@ -58,6 +67,17 @@ const ChatWindow = () => {
             <div className={styles.senderName}>{msg.sender}</div>
             <div className={`${styles.messageContent} ${msg.sender === 'me' ? styles.me : ''}`}>
               {msg.text}
+
+              {msg.sources && (
+                <div className={styles.sourcesGrid}>
+                    {msg.sources.map((source, srcIdx) => (
+                        <div key={srcIdx} className={`${styles.sourceItem} ${expandedSources[`${index}-${srcIdx}`] ? styles.expanded : styles.collapsed}`}
+                            onClick={() => toggleSource(index, srcIdx)}>
+                            {source.page_content}
+                        </div>
+                    ))}
+                </div>
+            )}
             </div>
           </div>
         ))}

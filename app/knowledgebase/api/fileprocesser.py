@@ -5,6 +5,7 @@ import uuid
 import shutil
 from .unstructured_parser import get_raw_pdf_elements, categorize_elements, summarize_imgs
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ async def parse_pdf(stored_file_name: str, file_id: uuid):
 
 async def summarize(text_elements, table_elements, file_id, summarizer):
     text_summaries = await summarize_elements(text_elements, summarizer)
+    text_summaries = await clean_summary_text(text_summaries)
     table_summaries= await summarize_elements(table_elements, summarizer) if len(table_elements) >0 else []
     img_summaries = await summarize_imgs(file_id=file_id) if len(os.listdir(f"{IMG_DIRECTORY}{file_id}")) != 0 else []
     return text_summaries, table_summaries, img_summaries
@@ -55,4 +57,9 @@ async def clear_file_dir(file_id:str):
 
 async def clear_img_dir(file_id:str):
     shutil.rmtree(f"{IMG_DIRECTORY}{file_id}")
+
+async def clean_summary_text(summarized_elements):
+    pattern = r"^\s*Sure!\s+Here\s+is\s+a\s+summary\s+of\s+the\s+text:\s*\n\n"
+    cleaned_elements = [re.sub(pattern, '', element, flags=re.DOTALL) for element in summarized_elements]
+    return cleaned_elements
     

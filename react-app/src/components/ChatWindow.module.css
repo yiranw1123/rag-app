@@ -61,3 +61,32 @@
 .submitButton{
   margin-top: 10px;
 }
+
+.sourcesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Creates a 2-column grid */
+  gap: 10px; /* Space between grid items */
+  margin-top: 10px; /* Space above the grid */
+}
+
+.sourceItem {
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  white-space: normal;
+}
+
+.sourceItem.collapsed {
+  max-height: 50px; /* Limit height to show only part of the content */
+  overflow: hidden; /* Hide overflow text */
+  text-overflow: ellipsis; /* Show ellipsis if text is too long */
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Show two lines of text */
+  -webkit-box-orient: vertical;
+}
+
+.sourceItem.expanded {
+  max-height: none; /* Expand to show all content */
+  overflow: visible;
+}

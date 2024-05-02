@@ -10,8 +10,8 @@ from ..routers import knowledgebase
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
 from ..store.utils.RedisStoreUtils import get_chat_history
+from .utils.chatUtils import format_chat_history
 import json
-
 
 router = APIRouter(prefix="/chat", tags = ['chat'])
 
@@ -45,28 +45,14 @@ async def get_resp_from_retriever(id, retriever, msg):
         config={
             "configurable": {"session_id":id}
     })
-    answer = res['answer']
-    return answer
+    response = {"answer": res['answer'], "context": [doc.json() for doc in res['context']]}
+    return json.dumps(response)
 
 @router.get('/history/{chat_id}')
 async def fetch_chat_history(chat_id = str):
     history = await get_chat_history(chat_id)
-    
-    formatted_messages = []
-    for message_str in history:
-        # Assuming each message is a JSON string; parse it
-        message = json.loads(message_str)
-        
-        # Determine the sender based on the type of the message
-        sender = "assistant" if message.get("type") == "ai" else "me"
-        
-        # Extract the content of the message
-        content = message.get("data", {}).get("content", "")
-        
-        # Append formatted message to the list
-        formatted_messages.append({"sender": sender, "text": content})
-
-    return list(reversed(formatted_messages))
+    formatted_history = await format_chat_history(history)
+    return formatted_history
 
 # id is the uuid for chat session with kb_id
 async def post(websocket: WebSocket, id: str, db: AsyncSession= Depends(get_db)):
@@ -78,9 +64,8 @@ async def post(websocket: WebSocket, id: str, db: AsyncSession= Depends(get_db))
     try:
         while True:
             data = await websocket.receive_text()
-            print(f"echo: {data}")
-            answer = await get_resp_from_retriever(id, retriever, data)
-            await websocket.send_text(answer)
+            response = await get_resp_from_retriever(id, retriever, data)
+            await websocket.send_text(response)
     except Exception as e:
         print(f"WebSocket error: {e}")
     finally:

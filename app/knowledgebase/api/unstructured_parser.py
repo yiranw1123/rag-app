@@ -55,10 +55,8 @@ async def categorize_elements(raw_pdf_elements):
 
     # Tables
     table_elements = [e for e in categorized_elements if e.type == "table"]
-    table_elements = await clean_summary_text(table_elements)
     # Text
     text_elements = [e for e in categorized_elements if e.type == "text"]
-    text_elements = await clean_summary_text(text_elements)
 
     return table_elements, text_elements
 
@@ -87,9 +85,3 @@ async def summarize_imgs(file_id:str):
     print("Processed ", len(img_summaries), " image summaries from directory.")
     
     return img_summaries
-
-async def clean_summary_text(summarized_elements):
-    pattern = r"^\s*Sure!\s+Here\s+is\s+a\s+summary\s+of\s+the\s+text:\s*\n\n"
-    for element in summarized_elements:
-        element.text = re.sub(pattern, '', element.text, count=1, flags=re.DOTALL)
-    return summarized_elements

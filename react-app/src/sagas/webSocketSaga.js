@@ -19,9 +19,17 @@ function createWebSocketChannel(socket){
             console.log("connected to websocket");
         };
         socket.onmessage = (event) => {
-            const message = event.data;
-            emit(websocketMessageReceived(message));
-            emit(addMessage({'sender': 'assistant', 'text': message}));
+            const response = JSON.parse(event.data);
+            emit(websocketMessageReceived(response));
+            const answer = response.answer;
+            const sources = [];
+            if(response.context){
+                response.context.forEach((docString) => {
+                    const doc = JSON.parse(docString);
+                    sources.push(doc);
+                })
+            }
+            emit(addMessage({'sender': 'assistant', 'text': answer, 'sources': sources}));
         };
         socket.onclose = () => {
             emit(websocketClosed());
