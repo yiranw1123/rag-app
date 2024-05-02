@@ -5,7 +5,6 @@ from langchain_openai import ChatOpenAI
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_community.chat_message_histories import RedisChatMessageHistory
 class QAChain(object):
     __chain = None

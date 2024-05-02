@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, WebSocket
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from starlette.websockets import WebSocketState
 from .. import database, schemas
 from ..dependencies import get_chroma_client
 from ..api.retriever import create_retriever
@@ -66,10 +67,12 @@ async def post(websocket: WebSocket, id: str, db: AsyncSession= Depends(get_db))
             data = await websocket.receive_text()
             response = await get_resp_from_retriever(id, retriever, data)
             await websocket.send_text(response)
+    except WebSocketDisconnect:
+        print(f"WebSocket disconnected for client {id}")
     except Exception as e:
         print(f"WebSocket error: {e}")
     finally:
-        if not websocket.client_state == "DISCONNECTED":
+        if websocket.client_state != WebSocketState.DISCONNECTED:
             await websocket.close(code=1000)
             print(f"Client {id} disconnected")
 
