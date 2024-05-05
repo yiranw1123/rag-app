@@ -6,7 +6,3 @@ body {
     font-family: monospace;
     font-size: 15px;
 }
-
-.chatContainer{
-  display: flex;
-}

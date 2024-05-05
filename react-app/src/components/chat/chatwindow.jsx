@@ -6,12 +6,12 @@ import {
   selectChatHistoryById,
   fetchChatHistory,
   addMessage
-} from "../features/chatState";
+} from "../../features/chatState";
 import { 
   sendMessage, 
   websocketConnecting, 
   websocketDisconnect 
-} from "../features/webSocketState";
+} from "../../features/webSocketState";
 
 
 const ChatWindow = () => {

@@ -78,32 +78,3 @@ export const uploadFile = async (kbId, filesData) =>{
     throw error;
   } 
 };
-
-//Chat CRUD
-export const fetchChatById = async (id) => {
-  const response = await api.get(`/chat/${id}`);
-  return response.data;
-};
-
-export const createChat = async (kbId) => {
-  try{
-      const response = await api.get(`/chat/kb_id/${kbId}`);
-      if(response.status !== 200){
-          throw new Error("Network response was not ok " + response.statusText);
-      }
-      return response.data;
-  } catch (error) {
-      console.error("Error fetching chat:", error);
-  }
-};
-
-export const fetchChats = async() => {
-  const response = await api.get('/chat/');
-  return response.data;
-};
-
-export const fetchChathistoryById = async(kbId) => {
-  const response = await api.get(`/chat/history/${kbId}`)
-  return response.data;
-
-}

@@ -6,13 +6,15 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_community.chat_message_histories import RedisChatMessageHistory
+
+
 class QAChain(object):
     __chain = None
 
     @classmethod
     def get_chain(cls, retriever):
         if cls.__chain is None:
-            llm = ChatOpenAI(temperature=0, model="gpt-4")
+            llm =ChatOpenAI(temperature=0, model="gpt-4")
             contextualize_q_system_prompt = """Given a chat history and the latest user question \
             which might reference context in the chat history, formulate a standalone question \
             which can be understood without the chat history. Do NOT answer the question, \

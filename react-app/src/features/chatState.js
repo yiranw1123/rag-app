@@ -3,6 +3,8 @@ import { createSelector, createSlice } from '@reduxjs/toolkit';
 export const chatSlice = createSlice({
     name: 'chat',
     initialState:{
+        kbDetails: null,
+        kbFiles:{},
         activeChat: null,
         isLoading: false,
         chatHistories:{},  //session_id: [msgs...]

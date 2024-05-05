@@ -1,9 +1,9 @@
 import {useEffect, useState } from 'react';
-import {fetchAllKB, fetchChats, createChat, fetchChatById} from '../api';
+import {fetchAllKB} from '../../api';
 import styles from "./ChatList.module.css";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchActiveChat } from "../features/chatState";
+import { fetchActiveChat } from "../../features/chatState";
 
 const ChatList = () => {
   const dispatch = useDispatch();
@@ -19,18 +19,9 @@ const ChatList = () => {
     setSelectedKB("");
   }
 
-  const fetchChatList = async () => {
-    try{
-      const data = await fetchChats();
-      setChats(data);
-    } catch(error){
-      console.error('Failed to fetch chats:', error);
-    }
-  };
-
   const goToChat = async () =>{
     try{
-      const data = await createChat(selectedKB);
+      dispatch('clientDb/addChatSession', kbId);
       navigate(`/chat/${data.id}`);
     } catch (error) {
       console.error("Error fetching chat:", error);

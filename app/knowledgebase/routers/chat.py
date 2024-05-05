@@ -13,8 +13,10 @@ import uuid
 from ..store.utils.RedisStoreUtils import get_chat_history
 from .utils.chatUtils import format_chat_history
 import json
+import cachetools
 
 router = APIRouter(prefix="/chat", tags = ['chat'])
+cache = cachetools.LRUCache(maxsize=1000)
 
 get_db = database.get_db
 get_chroma = get_chroma_client
@@ -41,13 +43,17 @@ async def get_by_id(id: uuid.UUID, db: AsyncSession= Depends(get_db)):
     return schemas.ShowChat(chat_name=c.chat_name, id = c.id, kb_id=c.kb_id)
 
 async def get_resp_from_retriever(id, retriever, msg):
-    res = await retriever.ainvoke(
-        {"input": msg},
-        config={
-            "configurable": {"session_id":id}
-    })
-    response = {"answer": res['answer'], "context": [doc.json() for doc in res['context']]}
-    return json.dumps(response)
+    if msg in cache:
+        print("found similar answer in cache")
+    else:
+        res = await retriever.ainvoke(
+            {"input": msg},
+            config={
+                "configurable": {"session_id":id}
+            })
+        response = {"answer": res['answer'], "context": [doc.json() for doc in res['context']]}
+        cache[msg] = response
+    return json.dumps(cache[msg])
 
 @router.get('/history/{chat_id}')
 async def fetch_chat_history(chat_id = str):
