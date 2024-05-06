@@ -11,7 +11,7 @@ export const clientDBSlice = createSlice({
   name: 'clientDB',
   initialState,
   reducers:{
-    addChatSession: (state, action) => {
+    addChatSession: (state, {payload: kbId}) => {
       state.isLoading = true;
     },
     addChatSessionSuccess: (state, action) => {

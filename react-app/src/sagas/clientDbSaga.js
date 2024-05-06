@@ -11,7 +11,13 @@ import {
 
 function* handleAddChatSession(action) {
   try {
-    const newSession = yield call(addChatSessionToDB, action.payload);
+    const params = action.payload;
+    const baseData = {
+      createTime: Date.now(),
+      updateTime: Date.now(),
+      knowledgeBaseId: params?.knowledgeBaseId || 0,
+    };
+    const newSession = yield call(addChatSessionToDB, baseData);
     yield put(addChatSessionSuccess(newSession));
   } catch(error) {
     yield put(addChatSessionFailure(error.toString()));
