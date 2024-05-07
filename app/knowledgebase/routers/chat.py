@@ -7,10 +7,8 @@ from ..constants import COLLECTION_PREFIX
 from ..api.qachain import QAChain
 from typing import List
 from ..repository import chat
-from ..routers import knowledgebase
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
-from ..store.utils.RedisStoreUtils import get_chat_history
 from .utils.chatUtils import format_chat_history
 import json
 import cachetools
@@ -24,23 +22,20 @@ get_chroma = get_chroma_client
 @router.get('/', response_model=List[schemas.ShowChat])
 async def all(db: AsyncSession= Depends(get_db)):
     data = await chat.get_all(db)
-    return [schemas.ShowChat(id = chat.id, kb_id=chat.kb_id) for chat in data]
+    return [schemas.ShowChat(id = chat.id) for chat in data]
 
 @router.get('/kb_id/{kb_id}', response_model=schemas.ShowChat)
 async def get_by_kbid(kb_id:int, db: AsyncSession= Depends(get_db)):
     c = await chat.get_by_kbid(kb_id, db)
     if not c:
-        kb_details = await knowledgebase.get_by_id(kb_id, db)
-        kb_name = kb_details.name
-
         # chat id will be the key to redis msg store
         c = await chat.create(schemas.CreateChat(kb_id=kb_id), db)
-    return schemas.ShowChat(kb_id= c.kb_id, id = c.id)
+    return schemas.ShowChat(id = c.id)
 
 @router.get('/{id}', response_model=schemas.ShowChat)
 async def get_by_id(id: uuid.UUID, db: AsyncSession= Depends(get_db)):
     c = await chat.get_by_id(id, db)
-    return schemas.ShowChat(id = c.id, kb_id=c.kb_id)
+    return schemas.ShowChat(id = c.id)
 
 async def get_resp_from_retriever(id, retriever, msg):
     if msg in cache:
@@ -57,7 +52,7 @@ async def get_resp_from_retriever(id, retriever, msg):
 
 @router.get('/history/{chat_id}')
 async def fetch_chat_history(chat_id = str):
-    history = await get_chat_history(chat_id)
+    history = await chat.get_history_tag_for_chat(chat_id)
     formatted_history = await format_chat_history(history)
     return formatted_history
 

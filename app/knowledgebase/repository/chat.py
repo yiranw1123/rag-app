@@ -1,6 +1,7 @@
 from .. import models, schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
+from sqlalchemy.orm import joinedload
 import uuid
 
 async def get_all(db: AsyncSession):
@@ -27,3 +28,9 @@ async def get_by_id(id: uuid.UUID, db: AsyncSession):
     results = await db.execute(stmt)
     chat = results.scalars().first()
     return chat
+
+async def get_history_tag_for_chat(id:uuid.UUID, db:AsyncSession):
+    stmt = select(models.Chat).options(joinedload(models.ChatMessages)
+                                       .joinedload(models.Tags)).filter(models.Chat.id == id)
+    messages = await db.execute(stmt)
+    return messages

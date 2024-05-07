@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(leve
 async def onStart(app: FastAPI):
     async with engine.begin() as conn:
 
-        await conn.run_sync(models.Base.metadata.drop_all)
+        #await conn.run_sync(models.Base.metadata.drop_all)
         await conn.run_sync(models.Base.metadata.create_all)
 
     app.state.chroma = chromadb.HttpClient(host="localhost", port=8080)

@@ -1,14 +1,19 @@
-import { React, useState } from 'react';
+import { React, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import { useDispatch } from 'react-redux';
-import { sendMessage } from '../../features/webSocketState';
+import { useDispatch, useSelector } from 'react-redux';
+import { sendMessage, websocketConnecting } from '../../features/webSocketState';
 import { addMessage } from '../../features/chatState';
 
 export default function QuestionForm() {
+  const chatId = useSelector(state => state.chat.chatId);
   const dispatch = useDispatch();
   const [message, setMessage] = useState('');
+  
+  useEffect(() =>{
+    dispatch(websocketConnecting({chatId}));
+  },[]);
 
   const handleSendMessage =  async () => {
     dispatch(sendMessage(message));

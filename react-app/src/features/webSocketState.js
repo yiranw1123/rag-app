@@ -4,13 +4,10 @@ export const webSocketSlice = createSlice({
     name:"websocket",
     initialState:{
         isConnected: false,
-        chatId: null,
         error: null
     },
     reducers:{
-        websocketConnecting: (state, action) =>{
-            state.chatId = action.payload.chatId;
-        },
+        websocketConnecting: () =>{},
         websocketOpened: (state) => {
             state.isConnected = true;
         },

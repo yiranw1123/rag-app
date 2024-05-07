@@ -47,7 +47,7 @@ function createWebSocketChannel(socket){
 function* initializeWebSocket(chatId) {
     const socketUrl = `ws://127.0.0.1:8000/chat/${chatId}/ws`;
     const socket = new WebSocket(socketUrl);
-    yield put(websocketConnecting(chatId));
+    yield put(websocketOpened(chatId));
     return socket;
 }
 
@@ -91,8 +91,9 @@ function* watchSendMessage(socket){
 function* webSocketSaga(){
     while (true){
         const {payload} = yield take('websocket/websocketConnecting');
-        if(payload.activeChatId){
-            const socket = yield call(initializeWebSocket, payload.activeChatId);
+        const chatId = payload.chatId.id;
+        if(chatId){
+            const socket = yield call(initializeWebSocket, chatId);
             const task = yield fork(createConnection, socket);
             const sendMessageTask = yield fork(watchSendMessage, socket);
 

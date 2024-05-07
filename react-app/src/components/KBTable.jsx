@@ -5,7 +5,7 @@ import TableFooter from "./tablefooter";
 import styles from "./Table.module.css";
 import {useNavigate} from "react-router-dom";
 import { createChat } from "../api";
-import { setConversationId, setSelectedKB } from "../features/chatState";
+import { setChatId, setSelectedKB } from "../features/chatState";
 import { useDispatch } from "react-redux";
 import {fetchFilesList} from '../features/chatState';
 
@@ -24,7 +24,7 @@ const KBTable = ({data, rowsPerPage, onView, onDelete}) => {
     dispatch(fetchFilesList(kbId));
     //conversation_id
     const chatId = await createChat(kbId);
-    dispatch(setConversationId(chatId));
+    dispatch(setChatId(chatId));
     navigate('/chat');
   };
 
