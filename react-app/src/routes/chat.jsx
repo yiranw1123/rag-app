@@ -6,7 +6,7 @@ import { Container, Grid } from '@mui/material';
 import styled from '@mui/system/styled';
 import ChatNavBar from '../components/chat/navBar.jsx';
 import QuestionForm from '../components/chat/newquestion.jsx';
-
+import DetailsAccordion from '../components/chat/kbdetailsaccordin.jsx';
 
 const Chat = () =>{
   const [showQuestionInputForm, setShowQuestionInputForm] = useState(false);
@@ -43,32 +43,27 @@ const Chat = () =>{
   return(
     <>
       <ChatNavBar onToggleQuestionForm = {toggleQuestionForm}/>
-      <Container style={{ height: 'calc(100vh - 64px)' }} maxWidth={false}>
-        <Grid container spacing={1} style={{ height: '100%' }}>
-          {/* Column for details + prev questions */}
-          <Grid item xs={4} style={{ height: '100%' }}>
-            <Grid container direction="column" style={{ height: '100%' }}>
-              <Grid item style={{ height: '50%' }}>
-                <Item>1</Item>
-              </Grid>
-              <Grid item style={{ height: '50%' }}>
-                <Item>3</Item>
-              </Grid>
-            </Grid>
-          </Grid>
+      <Container style={{ height: 'calc(100vh - 64px)'}} maxWidth={false}>
+      <Grid container spacing={1} style={{ height: '100vh' }}> {/* Full viewport height */}
+        {/* Column for details + prev questions */}
+        <Grid item xs={4}>  {/* Takes up 4 out of 12 columns */}
+          <Item>
+            <DetailsAccordion />
+          </Item>
+        </Grid>
 
-          {/* Column for new question+ chat display*/}
-          <Grid item xs={8} style={{ height: '100%' }}>
-            <Grid container direction="column" style={{ height: '100%' }}>
-              <Grid item style={{ height: questionFormHeight }}>
-                {showQuestionInputForm && <Item><QuestionForm/></Item>}
-              </Grid>
-              <Grid item style={{ flexGrow: 1 }}>
-                <Item>4</Item>
-              </Grid>
+        {/* Column for new question + chat display */}
+        <Grid item xs={8}>  {/* Takes up 8 out of 12 columns */}
+          <Grid container direction="column" style={{ height: '100%' }}>
+            <Grid item style={{ height: questionFormHeight }}>
+              {showQuestionInputForm && <Item><QuestionForm/></Item>}
+            </Grid>
+            <Grid item style={{ flexGrow: 1 }}>
+              <Item>Chat Display Area</Item>
             </Grid>
           </Grid>
         </Grid>
+      </Grid>
       </Container>
 
     </>

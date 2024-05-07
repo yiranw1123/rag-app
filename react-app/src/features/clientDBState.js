@@ -4,18 +4,18 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState= {
   isLoading: false,
   error: null,
-  chatSession: null
+  chatId: null
 }
 
 export const clientDBSlice = createSlice({
   name: 'clientDB',
   initialState,
   reducers:{
-    addChatSession: (state, {payload: kbId}) => {
+    addChatSession: (state, {payload: chatId}) => {
       state.isLoading = true;
     },
     addChatSessionSuccess: (state, action) => {
-      state.sessions.push(action.payload);
+      state.chatId = action.payload;
       state.isLoading = false;
     },
     addChatSessionFailure: (state, action) => {

@@ -5,10 +5,10 @@ export const chatSlice = createSlice({
     name: 'chat',
     initialState:{
         selectedKB: null,
-        kbFiles:{},
-        conversationId: null,
+        kbFiles:[],
         isLoading: false,
-        chatHistories:{},  //session_id: [msgs...]
+        //Dictionary of list where key is chatId
+        chatHistories:{},
         error: null
     },
     reducers:{

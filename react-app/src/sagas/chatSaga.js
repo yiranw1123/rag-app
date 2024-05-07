@@ -1,10 +1,6 @@
 import {call, put, takeEvery } from "redux-saga/effects";
 import { 
-    getActiveChatSuccess,
-    getActiveChatFailure,
-    getHistorySuccess,
-    getHistoryFailure,
-    fetchFilesListFailure, fetchFilesListSuccess
+  fetchFilesListFailure, fetchFilesListSuccess
 } from "../features/chatState";
 import {fetchKBFiles} from '../api';
 
