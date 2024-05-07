@@ -34,12 +34,10 @@ class CreateFileChunk(BaseModel):
     file_id: UUID4
 
 class ShowChat(BaseModel):
-    chat_name: str
     id: UUID4
     kb_id: int
 
 class CreateChat(BaseModel):
-    chat_name: str
     kb_id: int
 
 class ChatMessage(BaseModel):

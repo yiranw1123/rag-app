@@ -24,7 +24,7 @@ get_chroma = get_chroma_client
 @router.get('/', response_model=List[schemas.ShowChat])
 async def all(db: AsyncSession= Depends(get_db)):
     data = await chat.get_all(db)
-    return [schemas.ShowChat(chat_name=chat.chat_name, id = chat.id, kb_id=chat.kb_id) for chat in data]
+    return [schemas.ShowChat(id = chat.id, kb_id=chat.kb_id) for chat in data]
 
 @router.get('/kb_id/{kb_id}', response_model=schemas.ShowChat)
 async def get_by_kbid(kb_id:int, db: AsyncSession= Depends(get_db)):
@@ -34,13 +34,13 @@ async def get_by_kbid(kb_id:int, db: AsyncSession= Depends(get_db)):
         kb_name = kb_details.name
 
         # chat id will be the key to redis msg store
-        c = await chat.create(schemas.CreateChat(chat_name = kb_name, kb_id=kb_id), db)
-    return schemas.ShowChat(chat_name=c.chat_name, kb_id= c.kb_id, id = c.id)
+        c = await chat.create(schemas.CreateChat(kb_id=kb_id), db)
+    return schemas.ShowChat(kb_id= c.kb_id, id = c.id)
 
 @router.get('/{id}', response_model=schemas.ShowChat)
 async def get_by_id(id: uuid.UUID, db: AsyncSession= Depends(get_db)):
     c = await chat.get_by_id(id, db)
-    return schemas.ShowChat(chat_name=c.chat_name, id = c.id, kb_id=c.kb_id)
+    return schemas.ShowChat(id = c.id, kb_id=c.kb_id)
 
 async def get_resp_from_retriever(id, retriever, msg):
     if msg in cache:

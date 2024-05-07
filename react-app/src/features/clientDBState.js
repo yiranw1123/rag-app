@@ -11,7 +11,7 @@ export const clientDBSlice = createSlice({
   name: 'clientDB',
   initialState,
   reducers:{
-    addChatSession: (state, {payload: chatId}) => {
+    addChatSession: (state) => {
       state.isLoading = true;
     },
     addChatSessionSuccess: (state, action) => {
@@ -55,7 +55,7 @@ export const clientDBSlice = createSlice({
     getChatHistoryWithSessionId: (state) => {
       state.isLoading = true;
     },
-    getChatHistoryWithSessionIdSuccess: (state, action) => {
+    getChatHistoryWithSessionIdSuccess: (state) => {
       state.isLoading = false;
     },
     getChatHistoryWithSessionIdFaillure: (state, action) => {

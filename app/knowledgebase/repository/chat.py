@@ -10,7 +10,7 @@ async def get_all(db: AsyncSession):
     return kbs
 
 async def create(request: schemas.CreateChat, db: AsyncSession):
-    chat = models.Chat(chat_name = request.chat_name, kb_id = request.kb_id)
+    chat = models.Chat(kb_id = request.kb_id)
     db.add(chat)
     await db.flush()
     await db.refresh(chat)

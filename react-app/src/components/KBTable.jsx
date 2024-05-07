@@ -4,8 +4,8 @@ import useTable from '../hooks/useTable';
 import TableFooter from "./tablefooter";
 import styles from "./Table.module.css";
 import {useNavigate} from "react-router-dom";
-import { addChatSession } from "../features/clientDBState";
-import { setSelectedKB } from "../features/chatState";
+import { createChat } from "../api";
+import { setConversationId, setSelectedKB } from "../features/chatState";
 import { useDispatch } from "react-redux";
 import {fetchFilesList} from '../features/chatState';
 
@@ -16,14 +16,15 @@ const KBTable = ({data, rowsPerPage, onView, onDelete}) => {
   const [page, setPage] = useState(1);
   const {slice, range} = useTable(data, page, rowsPerPage);
 
-  const goToChat = (knowledgebase) =>{
+  const goToChat = async (knowledgebase) =>{
     // kb name, description
     dispatch(setSelectedKB(knowledgebase));
     const kbId = knowledgebase.id;
     //fetch files list
     dispatch(fetchFilesList(kbId));
     //conversation_id
-    dispatch(addChatSession(kbId));
+    const chatId = await createChat(kbId);
+    dispatch(setConversationId(chatId));
     navigate('/chat');
   };
 

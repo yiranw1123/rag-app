@@ -4,9 +4,6 @@ import {
 } from "../features/chatState";
 import {fetchKBFiles} from '../api';
 
-function* workGetActiveChat(action){
-}
-
 function* handleFetchFilesList(action){
     try{
         const kbId = action.payload;
@@ -18,7 +15,6 @@ function* handleFetchFilesList(action){
 }
 
 function* chatSaga(){
-    yield takeEvery('chat/fetchActiveChat', workGetActiveChat);
     yield takeEvery('chat/fetchFilesList', handleFetchFilesList);
 }
 

@@ -1,5 +1,4 @@
 import { createSelector, createSlice } from '@reduxjs/toolkit';
-import { act } from 'react';
 
 export const chatSlice = createSlice({
     name: 'chat',
@@ -18,7 +17,7 @@ export const chatSlice = createSlice({
         setConversationId:(state, action) => {
             state.conversationId = action.payload;
         },
-        fetchFilesList:(state, {payload: kbId}) => {
+        fetchFilesList:(state) => {
             state.isLoading = true;
         },
         fetchFilesListSuccess:(state, action)=>{
@@ -28,16 +27,6 @@ export const chatSlice = createSlice({
         fetchFilesListFailure:(state, action)=>{
             state.isLoading = false;
             state.error = action.payload;
-        },
-        fetchActiveChat: (state) => {
-            state.isLoading = true;
-        },
-        getActiveChatSuccess: (state, action) => {
-            state.activeChat = action.payload;
-            state.isLoading = false;
-        },
-        getActiveChatFailure: (state) => {
-            state.isLoading = false;
         },
         fetchChatHistory: (state) => {
             state.isLoading = true;
@@ -61,9 +50,6 @@ export const chatSlice = createSlice({
 });
 
 export const {
-    fetchActiveChat, 
-    getActiveChatFailure, 
-    getActiveChatSuccess,
     fetchChatHistory, getHistoryFailure, getHistorySuccess,
     addMessage,
     setSelectedKB,

@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlalchemy import String, ForeignKey, Uuid
+from sqlalchemy import String, ForeignKey, Uuid, Table, Column, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.schema import Index
 from datetime import datetime
@@ -42,12 +42,34 @@ class FileChunk(Base):
     file_id: Mapped[Uuid] = mapped_column(Uuid, ForeignKey("knowledge_base_file.id"))
     created: Mapped[datetime] = mapped_column(default = datetime.now)
     file = relationship("KnowledgeBaseFile", back_populates= "chunks", lazy = "selectin")
+    chat_message_id: Mapped[Uuid] = mapped_column(Uuid, ForeignKey('chat_messages.id'), nullable=True) 
+    chat_message = relationship("ChatMessages", back_populates="sources", lazy = "selectin")
 
 class Chat(Base):
     __tablename__ = "chat"
     id: Mapped[Uuid] = mapped_column(Uuid, primary_key=True ,default=uuid.uuid4)
     kb_id:Mapped[int] = mapped_column(ForeignKey("knowledge_base.id"), index=True)
     created: Mapped[datetime] = mapped_column(default=datetime.now)
-    chat_name: Mapped[str] = mapped_column(String(255))
+    messagesCnt: Mapped[int] = mapped_column(default=0)
+
+# Association Table for Many-to-Many relationship between ChatMessages and Tags
+chat_messages_tags = Table('chat_messages_tags', Base.metadata,
+    Column('chat_message_id', Uuid(as_uuid=True), ForeignKey('chat_messages.id'), primary_key=True),
+    Column('tag_id', Integer, ForeignKey('tags.id'), primary_key=True)
+)
+class ChatMessages(Base):
+    __tablename__ = 'chat_messages'
+    id: Mapped[Uuid] = mapped_column(Uuid, primary_key=True ,default=uuid.uuid4)
+    chatId: Mapped[Uuid] = mapped_column(ForeignKey("chat.id"), index = True)
+    question: Mapped[str] = mapped_column(String(255))
+    answer: Mapped[str] = mapped_column(String(255))
+    sources = relationship("FileChunk", back_populates= "chat_message", lazy = "selectin")
+    tags = relationship("Tags", secondary=chat_messages_tags, back_populates="chat_messages", lazy = "selectin")
+
+class Tags(Base):
+    __tablename__ = 'tags'
+    id: Mapped[int] = mapped_column(primary_key = True, autoincrement = True)
+    text: Mapped[str] = mapped_column(String(255))
+    chat_messages = relationship("ChatMessages", secondary=chat_messages_tags, back_populates="tags", lazy="selectin")
 
 Index("files_by_kb_id", KnowledgeBaseFile.kb_id)

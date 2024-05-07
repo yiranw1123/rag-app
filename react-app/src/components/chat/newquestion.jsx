@@ -1,9 +1,28 @@
-import * as React from 'react';
+import { React, useState } from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import { useDispatch } from 'react-redux';
+import { sendMessage } from '../../features/webSocketState';
+import { addMessage } from '../../features/chatState';
 
 export default function QuestionForm() {
+  const dispatch = useDispatch();
+  const [message, setMessage] = useState('');
+
+  const handleSendMessage =  async () => {
+    dispatch(sendMessage(message));
+    dispatch(addMessage({'sender': 'me', 'text':message}));
+    setMessage(''); // Clear input
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleSendMessage();
+    }
+  };
+
   return (
     <Box
       component="form"
@@ -19,10 +38,13 @@ export default function QuestionForm() {
           label="New Question"
           multiline
           rows={4}
-          defaultValue="Type your question here..."
+          placeholder="Type your question here..."
+          onChange={(e) => setMessage(e.target.value)}
+          value={message} 
+          onKeyDown={handleKeyDown}
         />
       </div>
-      <Button variant="contained">Submit</Button>
+      <Button variant="contained" onClick={handleSendMessage}>Submit</Button>
     </Box>
   );
 }
