@@ -28,26 +28,21 @@ async def handle_file_upload(id, file:UploadFile, db, chroma, summarize_chain):
     # process file and save to backend
     stored_file_name = await save_file(file, file_id)
     table_elements, text_elements = await parse_pdf(stored_file_name, file_id)
-    text_summaries, table_summaries, img_summaries = await summarize(text_elements, table_elements, file_id, summarize_chain)
     
-    text_ids = [str(uuid.uuid4()) for _ in range(len(text_summaries))]
-    table_ids = [str(uuid.uuid4()) for _ in range(len(table_summaries))]
-    img_ids = [str(uuid.uuid4()) for _ in range(len(img_summaries))]
+    cleaned_summaries = await summarize(text_elements, table_elements, file_id, summarize_chain)
+    cleaned_summaries_ids = [str(uuid.uuid4()) for _ in range(len(cleaned_summaries))]
+    if(len(cleaned_summaries) != len(cleaned_summaries_ids)):
+        raise Exception(f"Number of ids {len(cleaned_summaries)} and {len(cleaned_summaries_ids)} doesn't match")
 
-    combined_ids = list(chain(text_ids, table_ids, img_ids))
-    combined_summaries = list(chain(text_summaries, table_summaries, img_summaries))
-    if(len(combined_ids) != len(combined_summaries)):
-        raise Exception(f"Number of ids {len(combined_ids)} and {len(combined_summaries)} doesn't match")
-
-    await add_chunk_ids(combined_ids, file_id, db)
+    await add_chunk_ids(cleaned_summaries_ids, file_id, db)
 
     collection_name = f"{COLLECTION_PREFIX}{str(id)}"
-    await save_to_chroma(collection_name, file_id, chroma, combined_ids, combined_summaries)
+    await save_to_chroma(collection_name, file_id, chroma, cleaned_summaries_ids, cleaned_summaries)
     
     # create redis client for adding file with file_id to redis
     redis_namespace = f"{collection_name}:{file_id}"
     redis_client = RedisStore(redis_namespace)
-    await save_to_redis(redis_client, combined_ids, combined_summaries)
+    await save_to_redis(redis_client, cleaned_summaries_ids, cleaned_summaries)
 
     await clear_img_dir(file_id=file_id)
     await clear_file_dir(file_id=file_id)

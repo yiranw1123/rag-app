@@ -6,6 +6,7 @@ import shutil
 from .unstructured_parser import get_raw_pdf_elements, categorize_elements, summarize_imgs
 import logging
 import re
+from itertools import chain
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +31,12 @@ async def parse_pdf(stored_file_name: str, file_id: uuid):
 
 async def summarize(text_elements, table_elements, file_id, summarizer):
     text_summaries = await summarize_elements(text_elements, summarizer)
-    text_summaries = await clean_summary_text(text_summaries)
-    table_summaries= await summarize_elements(table_elements, summarizer) if len(table_elements) >0 else []
+    table_summaries = await summarize_elements(table_elements, summarizer) if len(table_elements) >0 else []
+    summaries = list(chain(table_summaries, text_summaries))
+    cleaned_summaries = await clean_summary_text(summaries)
     img_summaries = await summarize_imgs(file_id=file_id) if len(os.listdir(f"{IMG_DIRECTORY}{file_id}")) != 0 else []
-    return text_summaries, table_summaries, img_summaries
+    cleaned_summaries.extend(img_summaries)
+    return cleaned_summaries
 
 async def save_file(file:UploadFile, file_id: uuid):
     file_dir = f"{UPLOADED_FILES_DIR}{file_id}/"
@@ -59,7 +62,8 @@ async def clear_img_dir(file_id:str):
     shutil.rmtree(f"{IMG_DIRECTORY}{file_id}")
 
 async def clean_summary_text(summarized_elements):
-    pattern = r"^\s*Sure!\s+Here\s+is\s+a\s+summary\s+of\s+the\s+text:\s*\n\n"
-    cleaned_elements = [re.sub(pattern, '', element, flags=re.DOTALL) for element in summarized_elements]
-    return cleaned_elements
-    
+    # Adjusted pattern to optionally match spaces and a single newline after the colon
+    pattern = re.compile(r'^.*?:\s*\n?', flags=re.DOTALL)
+
+    cleaned_texts = [re.sub(pattern, '', text).strip() for text in summarized_elements]
+    return cleaned_texts
