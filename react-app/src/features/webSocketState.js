@@ -15,7 +15,7 @@ export const webSocketSlice = createSlice({
             state.isConnected = false;
             state.chatId = null;
         },
-        websocketMessageReceived: (action) => {
+        websocketMessageReceived: (state, action) => {
             console.log("received message: ", action.payload);
         },
         websocketError: (state, action) => {
