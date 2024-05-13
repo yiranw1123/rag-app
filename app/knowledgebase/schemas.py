@@ -1,6 +1,6 @@
-from pydantic import BaseModel,UUID4
+from pydantic import BaseModel, UUID4, Field
 from datetime import datetime
-from typing import Any, List
+from typing import Any, List, Dict, Optional
 
 class ShowKnowledgeBase(BaseModel):
     name: str
@@ -27,22 +27,34 @@ class CreateKnowledgeBaseFile(BaseModel):
 class CreateFileChunk(BaseModel):
     chunk_id: UUID4
     file_id: UUID4
+
 class ShowChat(BaseModel):
     id: UUID4
 
 class CreateChat(BaseModel):
     kb_id: int
 
-class Tags(BaseModel):
-    id: UUID4
+class CreateTag(BaseModel):
     text: str
+    embedding: List
+
+class Tag(BaseModel):
+    id: int
+    text: str
+    embedding: List = None
+
+
+class TagsDict(BaseModel):
+    matched_tag: Optional[List[Tag]] = None
+    new_tags: Optional[List[CreateTag]] = None
 
 class CreateChatMessage(BaseModel):
-    chatId: UUID4
+    chatId: UUID4 = Field(alias='chatId')
     question: str
     answer: str
-    sources:List[CreateFileChunk]
-    tags: List[Tags]
+    sources: dict
+    embedding: list
+    tags: TagsDict = None
 
 
 class ChatMessage(BaseModel):
@@ -50,9 +62,16 @@ class ChatMessage(BaseModel):
     chatId: UUID4
     question: str
     answer: str
-    sources:List[CreateFileChunk]
-    tags: List[Tags]
+    sources: str
+    tagsList: Optional[List[Tag]] = None
 
 class Element(BaseModel):
     type: str
     text: Any
+
+class Document(BaseModel):
+    page_content: str
+    doc_id: str
+
+class DocumentList(BaseModel):
+    documents: List[Document]

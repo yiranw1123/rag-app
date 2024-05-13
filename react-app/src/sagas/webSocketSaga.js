@@ -23,8 +23,8 @@ function createWebSocketChannel(socket){
             emit(websocketMessageReceived(response));
             const answer = response.answer;
             const sources = [];
-            if(response.context){
-                response.context.forEach((docString) => {
+            if(response.sources){
+                response.sources.forEach((docString) => {
                     const doc = JSON.parse(docString);
                     sources.push(doc);
                 })
@@ -74,6 +74,7 @@ function* watchSendMessage(socket){
     const messageQueue = [];
     while(true){
         const {payload} = yield take(sendMessage);
+        console.log(payload);
         messageQueue.push(payload);
         while(messageQueue.length > 0 && socket.readyState === WebSocket.OPEN){
             const messageToSend = messageQueue.shift();

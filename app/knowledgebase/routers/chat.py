@@ -5,16 +5,15 @@ from ..dependencies import get_chroma_client
 from ..api.retriever import create_retriever
 from ..constants import COLLECTION_PREFIX
 from ..api.qachain import QAChain
-from typing import List
 from ..repository import chat
 from sqlalchemy.ext.asyncio import AsyncSession
+from ..api.llm import process_and_get_answer
+from typing import List
 import uuid
-from .utils.chatUtils import format_chat_history
 import json
-import cachetools
+
 
 router = APIRouter(prefix="/chat", tags = ['chat'])
-cache = cachetools.LRUCache(maxsize=1000)
 
 get_db = database.get_db
 get_chroma = get_chroma_client
@@ -37,24 +36,10 @@ async def get_by_id(id: uuid.UUID, db: AsyncSession= Depends(get_db)):
     c = await chat.get_by_id(id, db)
     return schemas.ShowChat(id = c.id)
 
-async def get_resp_from_retriever(id, retriever, msg):
-    if msg in cache:
-        print("found similar answer in cache")
-    else:
-        res = await retriever.ainvoke(
-            {"input": msg},
-            config={
-                "configurable": {"session_id":id}
-            })
-        response = {"answer": res['answer'], "context": [doc.json() for doc in res['context']]}
-        cache[msg] = response
-    return json.dumps(cache[msg])
-
 @router.get('/history/{chat_id}')
-async def fetch_chat_history(chat_id = str):
-    history = await chat.get_history_tag_for_chat(chat_id)
-    formatted_history = await format_chat_history(history)
-    return formatted_history
+async def fetch_chat_history(chat_id = str, db: AsyncSession= Depends(get_db)):
+    history = await chat.fetch_history_by_id(chat_id, db)
+    return history
 
 # id is the uuid for chat session with kb_id
 async def post(websocket: WebSocket, id: str, db: AsyncSession= Depends(get_db)):
@@ -66,8 +51,15 @@ async def post(websocket: WebSocket, id: str, db: AsyncSession= Depends(get_db))
     try:
         while True:
             data = await websocket.receive_text()
-            response = await get_resp_from_retriever(id, retriever, data)
-            await websocket.send_text(response)
+            print(f"received: {data}")
+            # schemas.ChatMessage
+            message_model = await process_and_get_answer(kb_id, id, data, retriever, db)
+            response = {
+                'answer': message_model.answer,
+                'sources': message_model.sources,
+                'tags': [t.model_dump_json() for t in message_model.tagsList]
+            }
+            await websocket.send_text(json.dumps(response))
     except WebSocketDisconnect:
         print(f"WebSocket disconnected for client {id}")
     except Exception as e:
@@ -78,7 +70,6 @@ async def post(websocket: WebSocket, id: str, db: AsyncSession= Depends(get_db))
             print(f"Client {id} disconnected")
 
 async def get_retriever(kb_id: int, chroma_client = Depends(get_chroma)):
-    #check if a session with this kb_id already exists, if so load the history
     collection_name = f"{COLLECTION_PREFIX}{kb_id}"
     retriever = await create_retriever(collection_name, chroma_client)
     chain = QAChain.get_chain(retriever)
