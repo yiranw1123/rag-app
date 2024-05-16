@@ -1,7 +1,7 @@
 from .fileprocesser import save_file, parse_pdf, summarize, clear_file_dir, clear_img_dir
 from ..repository import knowledgebase
 from ..routers import knowledgebasefile
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException
 import uuid
 from .. import schemas
 from ..routers.filechunk import add_chunk_ids
@@ -12,19 +12,48 @@ from ..store.RedisStore import RedisStore
 from ..store.utils.RedisStoreUtils import handle_file_delete_in_redis
 import logging
 from langchain.docstore.document import Document
-from itertools import chain
+import asyncio
 
 
 logger = logging.getLogger(__name__)
 
+async def handle_file_uploads(kb_id, files: List[UploadFile], db, chroma, summarize_chain):
+    processed = []
+    try:
+        kb_exists = await knowledgebase.get_by_id(kb_id, db)
+        if not kb_exists:
+            raise ValueError("KnowledgeBase ID does not exist")
+        
+        # tasks = [
+        #     upload_single_file(kb_id, file, db, chroma, summarize_chain) for file in files
+        # ]
+        # results = await asyncio.gather(*tasks, return_exceptions=True)
 
-async def handle_file_upload(id, file:UploadFile, db, chroma, summarize_chain):
+        # # Handle the results and process exceptions if any
+        # for result in results:
+        #     if isinstance(result, Exception):
+        #         raise result
+        #     else:
+        #         processed.append(str(result))
+        #         print(f"Successfully processed file with ID {result}")
+        
+        # #  If all files uploaded successfully, flush all file records at once
+        # await db.flush()
+        for file in files:
+            file_id = await upload_single_file(kb_id, file, db, chroma, summarize_chain)
+            processed.append(str(file_id))
+            print(f"Successfully processed {file.filename}")
+    except Exception as e:
+        logger.exception(f"Exception occured {e}")
+        handle_chroma_rollback(kb_id, processed, chroma)
+        await handle_redis_rollback(kb_id, processed)
+        raise HTTPException(status_code=500, detail=f"An error occurred while processing: {str(e)}")
+
+async def upload_single_file(id, file:UploadFile, db, chroma, summarize_chain):
     file_name = file.filename
-    kb_exists = await knowledgebase.get_by_id(id, db)
-    if not kb_exists:
-        raise ValueError("KnowledgeBase ID does not exist")
     # save file info to SQL
     file_id = await knowledgebasefile.create(schemas.CreateKnowledgeBaseFile(kb_id=id, file_name=file_name), db)
+    
     # process file and save to backend
     stored_file_name = await save_file(file, file_id)
     table_elements, text_elements = await parse_pdf(stored_file_name, file_id)

@@ -60,19 +60,41 @@ export const deleteKBFile = async(fileId) => {
       }
 };
 
-export const uploadFile = async (kbId, filesData) =>{
+export const CreateKBandUploadFile = async (formData) =>{
   try{
     const config = {
         headers: {
           'content-type': 'multipart/form-data',
         }
     };
-    const response =  await api.post(`/knowledgebase/${kbId}/upload/`, filesData, config);
+    const response =  await api.post('/knowledgebase/', formData, config);
+    if(response.status === 201){
+      console.log('Successfully created kb and uploaded files to server');
+    } else {
+      throw new Error(`Unexpected status code: ${response.status} `);
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Error create kb and uploading files: ", error);
+    throw error;
+  } 
+};
+
+
+export const uploadFile = async (kbId, formData) =>{
+  try{
+    const config = {
+        headers: {
+          'content-type': 'multipart/form-data',
+        }
+    };
+    const response =  await api.post(`/knowledgebase/${kbId}/upload`, formData, config);
     if(response.status === 201){
       console.log('Successfully uploaded files to server');
     } else {
       throw new Error(`Unexpected status code: ${response.status} `);
     }
+    return response.data;
   } catch (error) {
     console.error("Error uploading files: ", error);
     throw error;

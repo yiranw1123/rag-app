@@ -19,12 +19,15 @@ async def get_by_id(id: int, db: AsyncSession):
     return kb
 
 async def create(reqeust: schemas.CreateKnowledgeBase, db: AsyncSession):
-    kb = models.KnowledgeBase(name = reqeust.knowledgebase_name, description=reqeust.description, \
-                               embedding = "embed func", collection_name=None)
-    db.add(kb)
-    await db.flush()
-    await db.refresh(kb)
-    return kb.id
+    try:
+        kb = models.KnowledgeBase(name = reqeust.knowledgebase_name, description=reqeust.description, \
+                                embedding = "embed func", collection_name=None)
+        db.add(kb)
+        await db.flush()
+        await db.refresh(kb)
+        return kb.id
+    except Exception as error:# Rollback in case of any error
+        raise HTTPException(status_code=500, detail=str(error))
 
 async def delete(id: int, db:AsyncSession):
     stmt = select(models.KnowledgeBase).where(models.KnowledgeBase.id == id)

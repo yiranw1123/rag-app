@@ -11,12 +11,11 @@ Base = declarative_base()
 
 async def get_db():
     async with SessionLocal() as db:
-        async with db.begin():
-            try:
-                yield db
-                await db.commit()
-            except exc.SQLAlchemyError as error:
-                await db.rollback()
-                raise HTTPException(status_code=500, detail=str(error))
-            finally:
-                await db.close()
+        try:
+            print(f"New session created: {id(db)}")  # Log the session ID
+            yield db
+        except Exception as error:
+            await db.rollback()
+            raise HTTPException(status_code=500, detail=str(error))
+        finally:
+            await db.close()

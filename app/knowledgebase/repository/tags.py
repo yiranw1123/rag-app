@@ -16,7 +16,6 @@ async def get_all(db: AsyncSession):
     kbs = results.scalars().all()
     return kbs
 
-
 async def get_by_id(id: int, db: AsyncSession):
     stmt = select(models.Tag).where(models.Tag.id == id)
     result = await db.execute(stmt)

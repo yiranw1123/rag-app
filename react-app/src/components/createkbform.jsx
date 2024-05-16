@@ -1,5 +1,5 @@
 import React, { useRef, useState} from 'react';
-import {createKB, uploadFile} from '../api';
+import {CreateKBandUploadFile} from '../api';
 
 const CreateKBForm = ({onFormSubmit})=> {
   const initialForm = {
@@ -20,16 +20,11 @@ const CreateKBForm = ({onFormSubmit})=> {
     });
   };
 
-  const handleMultipleChange = (event)=> {
+  const handleFilesChange = (event)=> {
     setFiles([...event.target.files]);
   }
 
-  const createKnowledgeBase = async () => {
-    const kbId = await createKB(form);
-    return kbId;
-  }
-
-  const handleMultipleSubmit = async (event) =>{
+  const handleSubmit = async (event) =>{
     event.preventDefault();
 
     if(files.length === 0){
@@ -39,14 +34,25 @@ const CreateKBForm = ({onFormSubmit})=> {
 
     setIsCreating(true);
 
-    const kbId = await createKnowledgeBase();
-    const filesData = new FormData();
-    files.forEach((file, index) => {
-      filesData.append('files', file);
+    const createKBData = new FormData();
+    
+    Object.entries(form).forEach(([key, value]) => {
+      console.log(`Appending form field: ${key}: ${value}`); 
+      createKBData.append(key, value);
     });
+
+    files.forEach((file, index) => {
+      createKBData.append('files', file);
+    });
+
+    // Log formData entries
+    for (let pair of createKBData.entries()) {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
+    
     
     try{
-      await uploadFile(kbId, filesData);
+      const kbId = await CreateKBandUploadFile(createKBData);
     } catch (error) {
       console.error("Error uploading files: ", error);
       throw error;
@@ -63,7 +69,7 @@ const CreateKBForm = ({onFormSubmit})=> {
 
   return (
     <div className={'create-kb-form'}>
-      <form onSubmit={handleMultipleSubmit}>
+      <form onSubmit={handleSubmit}>
         <h2>Create Knowledgebase</h2>
         <div className='mb-3'>
           <label htmlFor='knowledgebase_name' className='form-label'>
@@ -83,7 +89,7 @@ const CreateKBForm = ({onFormSubmit})=> {
           <label htmlFor='fupload' className='form-label'>
             Upload Files
           </label>
-          <input type='file' className='form-control' id='fupload' name='fupload' onChange={handleMultipleChange} multiple ref={fileInputRef}></input>
+          <input type='file' className='form-control' id='fupload' name='fupload' onChange={handleFilesChange} multiple ref={fileInputRef}></input>
         </div>
         <button type="submit" className='btn btn-primary'>Create</button>
       </form>

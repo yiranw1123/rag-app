@@ -1,7 +1,7 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from .. import schemas
-from ..routers import chatmessage, tags
+from ..routers import chatmessage, tags, chat
 from sentence_transformers import SentenceTransformer
 from langchain_core.output_parsers import CommaSeparatedListOutputParser
 from typing import List
@@ -11,9 +11,9 @@ import numpy as np
 # Instantiate model once
 model = SentenceTransformer('all-miniLM-L6-v2')
 
-async def process_and_get_answer(kb_id, id, data, retriever, db):
+async def process_and_get_answer(kb_id, chat_id, user_question, retriever, db):
     # get response object res from llm
-    res = await get_resp_from_retriever(id, retriever, data)
+    res = await get_resp_from_retriever(chat_id, retriever, user_question)
     # embed question
     question_embedding = await get_embedding(res['input'])
     #create context dictionary
@@ -22,7 +22,7 @@ async def process_and_get_answer(kb_id, id, data, retriever, db):
     context_dict = pydantic_docs.model_dump()
 
     # base createchatmessage
-    base_message = schemas.CreateChatMessage(chatId = id, question=res['input'], answer=res['answer'],
+    base_message = schemas.CreateChatMessage(chatId = chat_id, question=res['input'], answer=res['answer'],
                                               sources=context_dict, embedding = question_embedding)
 
     # get tag for question
@@ -68,7 +68,6 @@ async def create_and_merge_keywords(kb_id, texts:List[str], db):
     retrieved_tags = await tags.get_by_kbid(kb_id, db)
     new_embeddings = np.array([tag.embedding for tag in new_tags])
 
-    merged_tags =[]
     # Prepare results structure
     results = {
         'matches': [],
@@ -103,11 +102,11 @@ async def create_and_merge_keywords(kb_id, texts:List[str], db):
     return results
 
 
-async def get_resp_from_retriever(id, retriever, msg):
+async def get_resp_from_retriever(chat_id, retriever, msg):
     res = await retriever.ainvoke(
         {"input": msg},
         config={
-            "configurable": {"session_id":id}
+            "configurable": {"session_id":chat_id}
         })
     return res
 

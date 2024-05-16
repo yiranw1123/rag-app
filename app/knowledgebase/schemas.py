@@ -8,7 +8,7 @@ class ShowKnowledgeBase(BaseModel):
     embedding: str
     created: datetime
     updated: datetime
-    description: str
+    description: Optional[str] = None
 class ShowKnowledgeBaseFile(BaseModel):
     id: UUID4
     kb_id: int
@@ -18,7 +18,7 @@ class ShowKnowledgeBaseFile(BaseModel):
     chunks:List[UUID4]
 class CreateKnowledgeBase(BaseModel):
     knowledgebase_name: str
-    description: str | None = None
+    description: Optional[str] = None
 class CreatedKBID(BaseModel):
     kb_id: int
 class CreateKnowledgeBaseFile(BaseModel):

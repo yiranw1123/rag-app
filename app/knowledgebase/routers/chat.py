@@ -11,7 +11,7 @@ from ..api.llm import process_and_get_answer
 from typing import List
 import uuid
 import json
-
+from cachetools import LRUCache, cached
 
 router = APIRouter(prefix="/chat", tags = ['chat'])
 
@@ -36,6 +36,7 @@ async def get_by_id(id: uuid.UUID, db: AsyncSession= Depends(get_db)):
     c = await chat.get_by_id(id, db)
     return schemas.ShowChat(id = c.id)
 
+@cached(cache = LRUCache(maxsize=32))
 @router.get('/history/{chat_id}')
 async def fetch_chat_history(chat_id = str, db: AsyncSession= Depends(get_db)):
     history = await chat.fetch_history_by_id(chat_id, db)

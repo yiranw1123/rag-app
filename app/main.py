@@ -2,25 +2,33 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from knowledgebase import models
-from knowledgebase.routers import knowledgebase, knowledgebasefile, chat
+from knowledgebase.routers import knowledgebase, knowledgebasefile, chat, chatmessage, tags
 from knowledgebase.database import engine
 import chromadb
 from dotenv import load_dotenv
 import os
 import logging
-from starlette.requests import Request
+from alembic.config import Config
+from alembic import command
 
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 async def onStart(app: FastAPI):
-    async with engine.begin() as conn:
-
-        #await conn.run_sync(models.Base.metadata.drop_all)
-        await conn.run_sync(models.Base.metadata.create_all)
+    load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+    print(os.getenv("ENVIRONMENT"))
+    if os.getenv("ENVIRONMENT") == "development":
+        await init_db()
+    else:
+        # Run Alembic migrations to ensure the database is up to date
+        alembic_cfg = Config("alembic.ini")
+        command.upgrade(alembic_cfg, "head")
 
     app.state.chroma = chromadb.HttpClient(host="localhost", port=8080)
 
-    load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+async def init_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(models.Base.metadata.drop_all)
+        await conn.run_sync(models.Base.metadata.create_all)
 
 async def onShutdown(app:FastAPI):
     pass
@@ -51,6 +59,8 @@ app.add_middleware(
 app.include_router(knowledgebase.router)
 app.include_router(knowledgebasefile.router)
 app.include_router(chat.router)
+app.include_router(chatmessage.router)
+app.include_router(tags.router)
 app.websocket("/chat/{id}/ws")(chat.post)
 
 # @app.middleware("http")
