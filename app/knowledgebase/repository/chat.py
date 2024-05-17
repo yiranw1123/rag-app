@@ -2,6 +2,8 @@ from .. import models, schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import SQLAlchemyError
+from fastapi import HTTPException
 import uuid
 
 async def get_all(db: AsyncSession):
@@ -11,11 +13,14 @@ async def get_all(db: AsyncSession):
     return kbs
 
 async def create(request: schemas.CreateChat, db: AsyncSession):
-    chat = models.Chat(kb_id = request.kb_id)
-    db.add(chat)
-    await db.flush()
-    await db.refresh(chat)
-    return chat
+    try:
+        chat = models.Chat(kb_id = request.kb_id)
+        db.add(chat)
+        await db.flush()
+        await db.refresh(chat)
+    except SQLAlchemyError as e:
+        print("SQLAlchemy error occurred: %s", e)
+        raise HTTPException(status_code=500, detail="Database error occurred.")
 
 async def get_by_kbid(kb_id: int, db: AsyncSession):
     stmt = select(models.Chat).where(models.Chat.kb_id == kb_id)

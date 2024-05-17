@@ -1,7 +1,8 @@
 from .. import schemas, models
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select
 from fastapi import HTTPException, status
+
 
 async def create(request: schemas.CreateTag, db: AsyncSession):
     tag = models.Tag(text=request.text, embedding=request.embedding)

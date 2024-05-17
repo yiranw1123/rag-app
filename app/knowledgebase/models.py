@@ -46,11 +46,11 @@ class Chat(Base):
     __tablename__ = "chat_session"
     id: Mapped[Uuid] = mapped_column(Uuid, primary_key=True ,default=uuid.uuid4)
     kb_id:Mapped[int] = mapped_column(ForeignKey("knowledge_base.id", ondelete="CASCADE"), index=True)
-    knowledge_base = relationship("KnowledgeBase", back_populates="chat", single_parent=True)
+    knowledge_base = relationship("KnowledgeBase", back_populates="chat", single_parent=True, lazy="selectin")
     created: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
     updated: Mapped[DateTime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
     messagesCnt: Mapped[int] = mapped_column(default=0)
-    messages:Mapped[List['ChatMessage']] =  relationship(cascade="all, delete, delete-orphan", lazy = "selectin")
+    messages:Mapped[List['ChatMessage']] =  relationship(cascade="all, delete, delete-orphan", lazy ="selectin")
 
 # Association Table for Many-to-Many relationship between ChatMessages and Tags
 chat_messages_tags = Table('chat_messages_tags', Base.metadata,
@@ -66,7 +66,7 @@ class ChatMessage(Base):
     answer: Mapped[Text] = mapped_column(Text)
     sources = Column(JSON)
     embedding = Column(JSON)
-    chat: Mapped["Chat"] = relationship("Chat", back_populates="messages")
+    chat: Mapped["Chat"] = relationship("Chat", back_populates="messages", lazy = "selectin")
     tags: Mapped[List["Tag"]] = relationship("Tag", secondary=chat_messages_tags, back_populates="chat_messages", lazy = "selectin")
 
 class Tag(Base):

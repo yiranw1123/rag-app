@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, HTTPException
+from sqlalchemy.exc import SQLAlchemyError
 from starlette.websockets import WebSocketState
 from .. import database, schemas
 from ..dependencies import get_chroma_client
@@ -25,11 +26,17 @@ async def all(db: AsyncSession= Depends(get_db)):
 
 @router.get('/kb_id/{kb_id}', response_model=schemas.ShowChat)
 async def get_by_kbid(kb_id:int, db: AsyncSession= Depends(get_db)):
-    c = await chat.get_by_kbid(kb_id, db)
-    if not c:
-        # chat id will be the key to redis msg store
-        c = await chat.create(schemas.CreateChat(kb_id=kb_id), db)
-    return schemas.ShowChat(id = c.id)
+    async with db.begin():
+        try:
+            c = await chat.get_by_kbid(kb_id, db)
+            if not c:
+                # chat id will be the key to redis msg store
+                c = await chat.create(schemas.CreateChat(kb_id=kb_id), db)
+            return schemas.ShowChat(id = c.id)
+        except SQLAlchemyError as e:
+            await db.rollback()
+            print("SQLAlchemy error occurred: %s", e)
+            raise HTTPException(status_code=500, detail="Database error occurred.")
 
 @router.get('/{id}', response_model=schemas.ShowChat)
 async def get_by_id(id: uuid.UUID, db: AsyncSession= Depends(get_db)):

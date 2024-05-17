@@ -16,8 +16,7 @@ async def create(request: schemas.CreateChatMessage, db: AsyncSession):
             matched_tags = [await tags.get_by_id(tagModel.id, db)for tagModel in request.tags['matches']]
             tags_to_add.extend(matched_tags)
         if request.tags['new_tags']:
-            create_tags_tasks = [tags.create(tagModel, db) for tagModel in request.tags['new_tags']]
-            new_tags = await asyncio.gather(*create_tags_tasks)
+            new_tags = [await tags.create(tagModel, db) for tagModel in request.tags['new_tags']]
             tags_to_add.extend(new_tags)
 
         message = models.ChatMessage(chatId = request.chatId, question = request.question,
@@ -28,11 +27,8 @@ async def create(request: schemas.CreateChatMessage, db: AsyncSession):
         await db.refresh(message)
         return message
     except IntegrityError as e:
-        await db.rollback()
         raise HTTPException(status_code=400, detail="Data integrity error.")
     except SQLAlchemyError as e:
-        await db.rollback()
         raise HTTPException(status_code=500, detail="Database error.")
     except Exception as e:
-        await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
