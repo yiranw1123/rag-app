@@ -49,7 +49,7 @@ class TagsDict(BaseModel):
     new_tags: Optional[List[CreateTag]] = None
 
 class CreateChatMessage(BaseModel):
-    chatId: UUID4 = Field(alias='chatId')
+    chat_id: UUID4 = Field(alias='chat_id')
     question: str
     answer: str
     sources: dict
@@ -59,11 +59,11 @@ class CreateChatMessage(BaseModel):
 
 class ChatMessage(BaseModel):
     id: UUID4
-    chatId: UUID4
+    chat_id: UUID4
     question: str
     answer: str
     sources: str
-    tagsList: Optional[List[Tag]] = None
+    tags_list: Optional[List[Tag]] = None
 
 class Element(BaseModel):
     type: str

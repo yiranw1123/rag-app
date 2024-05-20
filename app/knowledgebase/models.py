@@ -60,7 +60,7 @@ chat_messages_tags = Table('chat_messages_tags', Base.metadata,
 class ChatMessage(Base):
     __tablename__ = 'chat_message'
     id: Mapped[Uuid] = mapped_column(Uuid, primary_key=True ,default=uuid.uuid4)
-    chatId: Mapped[Uuid] = mapped_column(ForeignKey("chat_session.id"), index = True)
+    chat_id: Mapped[Uuid] = mapped_column(ForeignKey("chat_session.id"), index = True)
     question: Mapped[str] = mapped_column(String(255))
     timestamp: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
     answer: Mapped[Text] = mapped_column(Text)

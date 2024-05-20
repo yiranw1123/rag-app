@@ -67,7 +67,7 @@ async def post(websocket: WebSocket, id: str):
                 response = {
                     'answer': message_model.answer,
                     'sources': message_model.sources,
-                    'tags': [t.model_dump_json() for t in message_model.tagsList]
+                    'tags': [t.model_dump_json() for t in message_model.tags_list]
                 }
                 await websocket.send_text(json.dumps(response))
         except WebSocketDisconnect:

@@ -22,7 +22,7 @@ async def process_and_get_answer(kb_id, chat_id, user_question, retriever):
     context_dict = pydantic_docs.model_dump()
 
     # base createchatmessage
-    base_message = schemas.CreateChatMessage(chatId = chat_id, question=res['input'], answer=res['answer'],
+    base_message = schemas.CreateChatMessage(chat_id = chat_id, question=res['input'], answer=res['answer'],
                                               sources=context_dict, embedding = question_embedding)
 
     # get tag for question
