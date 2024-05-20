@@ -52,7 +52,7 @@ const CreateKBForm = ({onFormSubmit})=> {
     
     
     try{
-      const kbId = await CreateKBandUploadFile(createKBData);
+      await CreateKBandUploadFile(createKBData);
     } catch (error) {
       console.error("Error uploading files: ", error);
       throw error;
@@ -63,7 +63,7 @@ const CreateKBForm = ({onFormSubmit})=> {
         fileInputRef.current.value = '';
       }
       setIsCreating(false);
-      onFormSubmit(kbId);
+      onFormSubmit();
     };
   }
 

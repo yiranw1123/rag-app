@@ -1,12 +1,10 @@
-from .. import schemas, models, database
+from .. import schemas, models
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import tags
 import json
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from fastapi import HTTPException
-import asyncio
 
-get_db = database.get_db
 
 async def create(request: schemas.CreateChatMessage, db: AsyncSession):
     try:

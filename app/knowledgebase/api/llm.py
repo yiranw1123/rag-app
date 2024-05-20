@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
-from .. import schemas
+from .. import schemas, database
 from ..routers import chatmessage, tags, chat
 from sentence_transformers import SentenceTransformer
 from langchain_core.output_parsers import CommaSeparatedListOutputParser
@@ -11,7 +11,7 @@ import numpy as np
 # Instantiate model once
 model = SentenceTransformer('all-miniLM-L6-v2')
 
-async def process_and_get_answer(kb_id, chat_id, user_question, retriever, db):
+async def process_and_get_answer(kb_id, chat_id, user_question, retriever):
     # get response object res from llm
     res = await get_resp_from_retriever(chat_id, retriever, user_question)
     # embed question
@@ -27,15 +27,15 @@ async def process_and_get_answer(kb_id, chat_id, user_question, retriever, db):
 
     # get tag for question
     # update chat message with created tags
-    tags_dict = await get_keywords(kb_id, base_message, db)
+    tags_dict = await get_keywords(kb_id, base_message)
 
     base_message.tags = tags_dict
     # save tag to tags db
-    message = await chatmessage.create(base_message, db)
+    message = await chatmessage.create(base_message)
     return message
 
 
-async def get_keywords(kb_id, base_message: schemas.CreateChatMessage, db):
+async def get_keywords(kb_id, base_message: schemas.CreateChatMessage):
     prompt = PromptTemplate.from_template(f"""
         Given the following information:
         User Question: {{question}}
@@ -57,15 +57,16 @@ async def get_keywords(kb_id, base_message: schemas.CreateChatMessage, db):
     keywords = await chain.ainvoke(input)
     #dict:{'matches':[schemas.Tag],
     #      'new_tags':[schemas.CreateTag]}
-    tags_dict = await create_and_merge_keywords(kb_id, keywords, db)
+    tags_dict = await create_and_merge_keywords(kb_id, keywords)
     return tags_dict
 
-async def create_and_merge_keywords(kb_id, texts:List[str], db):
+async def create_and_merge_keywords(kb_id, texts:List[str]):
     # Convert list of strings to list of Tag models
     # schema.CreateTag
     new_tags=[schemas.CreateTag(text=tag, embedding = await get_embedding(tag)) for tag in texts]
     # schemas.Tag
-    retrieved_tags = await tags.get_by_kbid(kb_id, db)
+    async with database.get_db_context() as db:
+        retrieved_tags = await tags.get_by_kbid(kb_id, db)
     new_embeddings = np.array([tag.embedding for tag in new_tags])
 
     # Prepare results structure

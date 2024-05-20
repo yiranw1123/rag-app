@@ -18,6 +18,7 @@ async def create(request: schemas.CreateChat, db: AsyncSession):
         db.add(chat)
         await db.flush()
         await db.refresh(chat)
+        return chat
     except SQLAlchemyError as e:
         print("SQLAlchemy error occurred: %s", e)
         raise HTTPException(status_code=500, detail="Database error occurred.")
