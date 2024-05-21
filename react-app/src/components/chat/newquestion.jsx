@@ -7,13 +7,8 @@ import { sendMessage, websocketConnecting } from '../../features/webSocketState'
 import { addMessage } from '../../features/chatState';
 
 export default function QuestionForm() {
-  const chatId = useSelector(state => state.chat.chatId);
   const dispatch = useDispatch();
   const [message, setMessage] = useState('');
-  
-  useEffect(() =>{
-    dispatch(websocketConnecting({chatId}));
-  },[]);
 
   const handleSendMessage =  async () => {
     dispatch(sendMessage(message));

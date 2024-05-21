@@ -22,7 +22,7 @@ function createWebSocketChannel(socket){
             const response = JSON.parse(event.data);
             emit(websocketMessageReceived(response));
             const answer = response.answer;
-            const sources =JSON.parse(response.sources);
+            const sources = JSON.parse(response.sources);
             emit(addMessage({'sender': 'assistant', 'text': answer, 'sources': sources}));
         };
         socket.onclose = () => {

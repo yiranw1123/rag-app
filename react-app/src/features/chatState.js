@@ -8,7 +8,11 @@ export const chatSlice = createSlice({
     kbFiles:[],
     isLoading: false,
     //Dictionary of list where key is chatId
-    chatHistories:{},
+    questions:[],
+    filteredQuestions:[],
+    selectedQuestion: null,
+    tags:[],
+    selectedTags:[],
     error: null
   },
   reducers:{
@@ -29,23 +33,14 @@ export const chatSlice = createSlice({
       state.isLoading = false;
       state.error = action.payload;
     },
-    fetchChatHistory: (state) => {
+    fetchQuestions: (state) => {
       state.isLoading = true;
     },
-    getHistorySuccess: (state, action) => {
-      state.chatHistories[state.chat.chatId] = action.payload;
-      state.isLoading = false;
+    setQuestions: (state) => {
+      state.isLoading = true;
     },
-    getHistoryFailure: (state, action) => {
-      state.isLoading = false;
-      state.error = action.payload;
-    },
-    addMessage: (state, action) => {
-      const chatId = state.chatId.id;
-      if(!state.chatHistories[chatId]){
-          state.chatHistories[chatId] = [];
-      }
-      state.chatHistories[chatId].push(action.payload);
+    selectQuestion:(state) => {
+
     }
   }
 });
