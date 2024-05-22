@@ -13,7 +13,6 @@ import { useSelector } from 'react-redux';
 export default function DetailsAccordion() {
   const files = useSelector(state => state.chat.kbFiles);
   const kbDetails = useSelector(state => state.chat.selectedKB)
-  console.log(kbDetails);
 
   return (
     <div>

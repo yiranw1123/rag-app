@@ -7,10 +7,6 @@ export const chatSlice = createSlice({
     chatId: null,
     kbFiles:[],
     isLoading: false,
-    //Dictionary of list where key is chatId
-    questions:[],
-    filteredQuestions:[],
-    selectedQuestion: null,
     tags:[],
     selectedTags:[],
     error: null
@@ -32,21 +28,12 @@ export const chatSlice = createSlice({
     fetchFilesListFailure:(state, action)=>{
       state.isLoading = false;
       state.error = action.payload;
-    },
-    fetchQuestions: (state) => {
-      state.isLoading = true;
-    },
-    setQuestions: (state) => {
-      state.isLoading = true;
-    },
-    selectQuestion:(state) => {
-
     }
   }
 });
 
 export const {
-  addMessage,
+  addQuestion,
   setSelectedKB,
   setChatId,
   fetchFilesList, fetchFilesListFailure, fetchFilesListSuccess,
@@ -54,9 +41,4 @@ export const {
 } = chatSlice.actions;
 export default chatSlice.reducer;
 
-const getChatHistories = state => state.chat.chatHistories;
-
-export const selectChatHistoryById = createSelector(
-    [getChatHistories, (chatId) => chatId],
-    (chatHistories, chatId) => chatHistories[chatId] || []
-);
+export const selectChatId = state => state.chat.chatId;

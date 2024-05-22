@@ -2,18 +2,21 @@ import { React, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import { useDispatch, useSelector } from 'react-redux';
-import { sendMessage, websocketConnecting } from '../../features/webSocketState';
-import { addMessage } from '../../features/chatState';
+import { useDispatch } from 'react-redux';
+import { sendMessage } from '../../features/webSocketState';
+import {v4 as uuid} from "uuid";
 
 export default function QuestionForm() {
   const dispatch = useDispatch();
   const [message, setMessage] = useState('');
 
   const handleSendMessage =  async () => {
-    dispatch(sendMessage(message));
-    dispatch(addMessage({'sender': 'me', 'text':message}));
-    setMessage(''); // Clear input
+    const newMessage = {
+      id: Date.now().toString(),
+      question: message
+    };
+    dispatch(sendMessage(newMessage));
+    setMessage('');
   };
 
   const handleKeyDown = (event) => {

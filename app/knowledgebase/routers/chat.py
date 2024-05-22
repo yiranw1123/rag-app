@@ -61,10 +61,12 @@ async def post(websocket: WebSocket, id: str):
         try:
             while True:
                 data = await websocket.receive_text()
-                print(f"received: {data}")
+                receivedMsg = json.loads(data)
+                print(f"received question: {receivedMsg['question']}")
                 # schemas.ChatMessage
-                message_model = await process_and_get_answer(kb_id, id, data, retriever)
+                message_model = await process_and_get_answer(kb_id, id, receivedMsg['question'], retriever)
                 response = {
+                    'id': receivedMsg['id'],
                     'answer': message_model.answer,
                     'sources': message_model.sources,
                     'tags': [t.model_dump_json() for t in message_model.tags_list]

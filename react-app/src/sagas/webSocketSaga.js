@@ -10,7 +10,7 @@ import {
     sendMessage
 } from "../features/webSocketState";
 
-import {addMessage} from "../features/chatState";
+import {addQuestion, updateQuestionWithResponse} from "../features/questionState";
 
 function createWebSocketChannel(socket){
     return eventChannel(emit => {
@@ -21,9 +21,7 @@ function createWebSocketChannel(socket){
         socket.onmessage = (event) => {
             const response = JSON.parse(event.data);
             emit(websocketMessageReceived(response));
-            const answer = response.answer;
-            const sources = JSON.parse(response.sources);
-            emit(addMessage({'sender': 'assistant', 'text': answer, 'sources': sources}));
+            emit(updateQuestionWithResponse(response));
         };
         socket.onclose = () => {
             emit(websocketClosed());
@@ -68,12 +66,13 @@ function* watchSendMessage(socket){
     const messageQueue = [];
     while(true){
         const {payload} = yield take(sendMessage);
-        console.log(payload);
         messageQueue.push(payload);
         while(messageQueue.length > 0 && socket.readyState === WebSocket.OPEN){
             const messageToSend = messageQueue.shift();
             try{
                 socket.send(JSON.stringify(messageToSend));
+                console.log("Dispatching addQuestion:", messageToSend);
+                yield put(addQuestion(messageToSend));
             } catch (error) {
                 messageQueue.unshift(messageToSend)
                 yield put(websocketError("Failed to send message"));
