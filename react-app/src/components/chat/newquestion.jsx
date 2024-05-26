@@ -1,10 +1,12 @@
-import { React, useEffect, useState } from 'react';
+import { React, useState } from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { useDispatch } from 'react-redux';
 import { sendMessage } from '../../features/webSocketState';
-import {v4 as uuid} from "uuid";
+import { setSelectedQuestion } from '../../features/questionState';
+import { v4 as uuidv4 } from 'uuid';
+
 
 export default function QuestionForm() {
   const dispatch = useDispatch();
@@ -12,9 +14,12 @@ export default function QuestionForm() {
 
   const handleSendMessage =  async () => {
     const newMessage = {
-      id: Date.now().toString(),
-      question: message
+      id: uuidv4(),
+      question: message,
+      status: 'pending',
+      timestamp: Date.now().toString()
     };
+    dispatch(setSelectedQuestion(newMessage));
     dispatch(sendMessage(newMessage));
     setMessage('');
   };

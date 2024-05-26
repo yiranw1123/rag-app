@@ -6,16 +6,22 @@ import QuestionForm from '../components/chat/newquestion.jsx';
 import DetailsAccordion from '../components/chat/kbdetailsaccordin.jsx';
 import { useDispatch, useSelector } from 'react-redux';
 import { websocketConnecting, websocketDisconnect } from '../features/webSocketState.js';
+import ChatDisplay from '../components/chat/chatdisplay.jsx';
+import { fetchTags, fetchQuestions } from '../features/questionState.js';
 
 const Chat = () =>{
   const chatId = useSelector(state => state.chat.chatId);
   const [showQuestionInputForm, setShowQuestionInputForm] = useState(false);
   const dispatch = useDispatch();
-  const questionFormHeight = showQuestionInputForm ? '25%' : '0%';
 
   const toggleQuestionForm = () => {
     setShowQuestionInputForm(prev => !prev);
   }
+
+  useEffect(() => {
+    dispatch(fetchQuestions({chatId}));
+    dispatch(fetchTags({chatId}));
+  }, [dispatch]);
 
   useEffect(() => {
     if(showQuestionInputForm) {
@@ -45,20 +51,29 @@ const Chat = () =>{
       <Container style={{ height: 'calc(100vh - 64px)'}} maxWidth={false}>
       <Grid container spacing={1} style={{ height: '100vh' }}> {/* Full viewport height */}
         {/* Column for details + prev questions */}
-        <Grid item xs={5}>  {/* Takes up 4 out of 12 columns */}
+        <Grid item xs={6}>  
           <Item>
             <DetailsAccordion />
           </Item>
         </Grid>
 
         {/* Column for new question + chat display */}
-        <Grid item xs={7}>  {/* Takes up 8 out of 12 columns */}
+        <Grid item xs={6}>
           <Grid container direction="column" style={{ height: '100%' }}>
-            <Grid item style={{ height: questionFormHeight }}>
+            <Grid item style={{ height: showQuestionInputForm ? '25%' : '0', overflow: 'hidden' }}>
               {showQuestionInputForm && <Item><QuestionForm/></Item>}
             </Grid>
-            <Grid item style={{ flexGrow: 1 }}>
-              <Item>Chat Display Area</Item>
+            <Grid item style={{
+              flexGrow: 1,
+              border: '1px solid #ccc',  // Light grey border
+              borderRadius: '4px',       // Rounded corners
+              overflow: 'auto',          // Ensures the content is scrollable
+              padding: '20px',           // Adds some padding inside the box
+              backgroundColor: '#f9f9f9', // Light background color
+              height: showQuestionInputForm ? 'calc(75vh - 20px)' : '90vh',            // Sets a fixed height
+              boxShadow: '0 2px 10px rgba(0,0,0,0.1)' // Subtle shadow for depth
+            }}>
+              <ChatDisplay/>
             </Grid>
           </Grid>
         </Grid>

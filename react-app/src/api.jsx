@@ -126,7 +126,7 @@ export const fetchChats = async() => {
 
 export const fetchChatHistoryById = async(chatId) =>{
   try{
-    const response = await api.get(`/chat/history/${chatId}`);
+    const response = await api.get(`/chat/history/${chatId.id}`);
     if(response.status !== 200){
         throw new Error("Network response was not ok " + response.statusText);
     }

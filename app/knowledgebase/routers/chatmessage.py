@@ -17,7 +17,8 @@ async def create(request: schemas.CreateChatMessage):
                 message = await chatmessage.create(request, db)
                 return schemas.ChatMessage(id = message.id, chat_id = message.chat_id,
                                         question = message.question, answer = message.answer,
-                                        sources = json.dumps(message.sources), tags_list = [schemas.Tag(id = t.id, text = t.text) for t in message.tags])
+                                        timestamp=message.timestamp, sources = json.dumps(message.sources),
+                                        tags_list = [schemas.Tag(id = t.id, text = t.text) for t in message.tags])
             except HTTPException as http_exc:
                 raise http_exc
             except Exception as e:

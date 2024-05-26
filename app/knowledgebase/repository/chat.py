@@ -36,8 +36,8 @@ async def get_by_id(id: uuid.UUID, db: AsyncSession):
     return chat
 
 async def fetch_history_by_id(id:uuid.UUID, db:AsyncSession):
-    stmt = select(models.Chat).options(joinedload(models.ChatMessages)
-                                       .joinedload(models.Tags)).filter(models.Chat.id == id)
+    stmt = select(models.Chat).options(joinedload(models.Chat.messages)
+            .joinedload(models.ChatMessage.tags)).filter(models.Chat.id == uuid.UUID(id))
     results = await db.execute(stmt)
-    messages = results.scalars().all()
+    messages = results.unique().scalars().all()
     return messages

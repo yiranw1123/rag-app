@@ -1,6 +1,7 @@
-from pydantic import BaseModel, UUID4, Field
+from pydantic import BaseModel, UUID4, Field, validator
 from datetime import datetime
 from typing import Any, List, Dict, Optional
+import json
 
 class ShowKnowledgeBase(BaseModel):
     name: str
@@ -49,7 +50,9 @@ class TagsDict(BaseModel):
     new_tags: Optional[List[CreateTag]] = None
 
 class CreateChatMessage(BaseModel):
+    id: UUID4
     chat_id: UUID4 = Field(alias='chat_id')
+    timestamp:str
     question: str
     answer: str
     sources: dict
@@ -63,7 +66,14 @@ class ChatMessage(BaseModel):
     question: str
     answer: str
     sources: str
-    tags_list: Optional[List[Tag]] = None
+    tags_list: Optional[str] = None
+    timestamp: str
+
+    @validator('tags_list', pre=True, always=True)
+    def serialize_tags_list(cls, v):
+        if isinstance(v, list):
+            return json.dumps([tag.dict() for tag in v])
+        return v
 
 class Element(BaseModel):
     type: str

@@ -1,6 +1,6 @@
-import {takeEvery, select} from "redux-saga/effects";
+import { takeEvery, select, put, call } from "redux-saga/effects";
 import { fetchChatHistoryById } from "../api";
-import { setQuestions } from "../features/questionState";
+import { selectedQuestion, setQuestions, setSelectedQuestion, updateSelectedQuestion } from "../features/questionState";
 import {clientDb} from '../db/clientDb';
 import { selectChatId } from "../features/chatState";
 
@@ -24,9 +24,9 @@ function* handleAddQuestion(action) {
 }
 
 function* handleUpdateQuestionResponse(action){
-  const {id, answer, sources, tags} = action.payload;
-  const chatId = yield select(selectChatId);
-  const key = [chatId.id, id];
+  const {id, chat_id, answer, sources, tags, timestamp} = action.payload;
+  //const chatId = yield select(selectChatId);
+  const key = [chat_id, id];
   const currMessage = yield clientDb.questionHistory
     .where('[chatId+questionId]')
     .equals(key)
@@ -38,6 +38,11 @@ function* handleUpdateQuestionResponse(action){
     currMessage.tags = tags;
   } else {
     console.log('No existing question found to update');
+  }
+
+  const currSelectedQuestion = yield select(selectedQuestion);
+  if (currSelectedQuestion.payload.id == currMessage.questionId){
+    yield put(setSelectedQuestion(currMessage));
   }
 
   try{
@@ -53,6 +58,8 @@ function* handleFetchQuestion(action){
   const {chatId} = action.payload;
   try{
     const questions = yield call(fetchChatHistoryById, chatId);
+    // Write fetched questions to IndexedDB
+    //yield call([clientDb.questionHistory, 'bulkPut'], questions); 
     yield put(setQuestions(questions));
   } catch (error){
     console.log("Error fetching questions..", error);

@@ -1,0 +1,55 @@
+/* yourStylesheet.module.css */
+
+.messageBlock {
+  display: flex;
+  flex-direction: column; 
+  align-items: flex-start; /* Aligns messages to the left by default */
+  margin-bottom: 10px; /* Space between each message block */
+}
+
+.messageContent {
+  width: 100%; /* Make sure it takes the full width of the container */
+  padding: 10px; /* Adds padding around the text for better readability */
+  margin: 5px 0; /* Adds some margin between messages */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: Adds shadow for better visibility */
+}
+
+.question {
+  text-align: left; /* Aligns the question text to the left */
+  background-color: #d6eaf0; /* Light grey background for the question */
+}
+
+.answer {
+  text-align: right; /* Aligns the answer text to the right */
+  background-color: #d1e7dd; /* Different background for the answer */
+}
+
+
+.sourcesGrid {
+  display: grid;
+  grid-template-columns: 1fr; /* Creates a 2-column grid */
+  gap: 10px; /* Space between grid items */
+  margin-top: 10px; /* Space above the grid */
+}
+
+.sourceItem {
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  white-space: normal;
+}
+
+.sourceItem.collapsed {
+  max-height: 50px; /* Limit height to show only part of the content */
+  overflow: hidden; /* Hide overflow text */
+  text-overflow: ellipsis; /* Show ellipsis if text is too long */
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Show two lines of text */
+  -webkit-box-orient: vertical;
+}
+
+.sourceItem.expanded {
+  max-height: none; /* Expand to show all content */
+  overflow: visible;
+}

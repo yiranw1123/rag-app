@@ -6,14 +6,15 @@ from sentence_transformers import SentenceTransformer
 from langchain_core.output_parsers import CommaSeparatedListOutputParser
 from typing import List
 import numpy as np
+import uuid
 
 
 # Instantiate model once
 model = SentenceTransformer('all-miniLM-L6-v2')
 
-async def process_and_get_answer(kb_id, chat_id, user_question, retriever):
+async def process_and_get_answer(kb_id, chat_id, msg, retriever):
     # get response object res from llm
-    res = await get_resp_from_retriever(chat_id, retriever, user_question)
+    res = await get_resp_from_retriever(chat_id, retriever, msg['question'])
     # embed question
     question_embedding = await get_embedding(res['input'])
     #create context dictionary
@@ -22,8 +23,10 @@ async def process_and_get_answer(kb_id, chat_id, user_question, retriever):
     context_dict = pydantic_docs.model_dump()
 
     # base createchatmessage
-    base_message = schemas.CreateChatMessage(chat_id = chat_id, question=res['input'], answer=res['answer'],
-                                              sources=context_dict, embedding = question_embedding)
+    base_message = schemas.CreateChatMessage(id = uuid.UUID(msg['id']), chat_id = chat_id,
+                                            question=res['input'], answer=res['answer'],
+                                            sources=context_dict, embedding = question_embedding,
+                                            timestamp=msg['timestamp'])
 
     # get tag for question
     # update chat message with created tags

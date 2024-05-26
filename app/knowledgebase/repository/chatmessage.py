@@ -18,8 +18,8 @@ async def create(request: schemas.CreateChatMessage, db: AsyncSession):
             new_tags = [await tags.create(tagModel, db) for tagModel in request.tags['new_tags']]
             tags_to_add.extend(new_tags)
 
-        message = models.ChatMessage(chat_id = request.chat_id, question = request.question,
-                                    answer = request.answer, sources = request.sources, 
+        message = models.ChatMessage(id = request.id, chat_id = request.chat_id, question = request.question,
+                                    answer = request.answer, sources = request.sources, timestamp = request.timestamp,
                                     embedding = embedding, tags=tags_to_add)
         db.add(message)
         await db.flush()
@@ -37,6 +37,6 @@ async def create(request: schemas.CreateChatMessage, db: AsyncSession):
     except IntegrityError as e:
         raise HTTPException(status_code=400, detail="Data integrity error.")
     except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail="Database error.")
+        raise HTTPException(status_code=500, detail=f"Database error.{str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

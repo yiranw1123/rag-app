@@ -6,7 +6,7 @@ import questionReducer from './questionState'
 const rootReducer = combineReducers({
     chat: chatReducer,
     websocket: websocketReducer,
-    questions:questionReducer
+    question:questionReducer
 });
 
 export default rootReducer;

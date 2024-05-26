@@ -62,7 +62,7 @@ class ChatMessage(Base):
     id: Mapped[Uuid] = mapped_column(Uuid, primary_key=True ,default=uuid.uuid4)
     chat_id: Mapped[Uuid] = mapped_column(ForeignKey("chat_session.id"), index = True)
     question: Mapped[str] = mapped_column(String(255))
-    timestamp: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
+    timestamp: Mapped[str] = mapped_column(String(30))
     answer: Mapped[Text] = mapped_column(Text)
     sources = Column(JSON)
     embedding = Column(JSON)
