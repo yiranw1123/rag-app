@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -8,14 +8,15 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { useSelector } from 'react-redux';
+import { Paper } from '@mui/material';
 
 
 export default function DetailsAccordion() {
   const files = useSelector(state => state.chat.kbFiles);
-  const kbDetails = useSelector(state => state.chat.selectedKB)
+  const kbDetails = useSelector(state => state.chat.selectedKB);
 
   return (
-    <div>
+    <Paper>
       <Accordion>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
@@ -57,7 +58,7 @@ export default function DetailsAccordion() {
         </AccordionSummary>
         <AccordionDetails>
           <List component="nav" aria-label="mailbox folders">
-            {files?.map((file, index) => (
+            {files?.map((file) => (
               <ListItem key={file.id} divider>
                 <ListItemText primary={file.file_name || 'Unknown'} secondary={file.created || 'No date'} />
               </ListItem>
@@ -65,6 +66,6 @@ export default function DetailsAccordion() {
           </List>
         </AccordionDetails>
       </Accordion>
-    </div>
+    </Paper>
   );
 }

@@ -1,21 +1,32 @@
-import { CardActionArea, CardContent, Typography, makeStyles } from "@mui/material";
+import { Card, CardActionArea, Typography } from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
+import { toggleTag, getSelectedTags } from "../../features/tagState";
 
-const useStyles = makeStyles({
-  card: {
-    margin: 8,
-  }
-});
+const TagCard = ({ tag }) => {
+  const dispatch = useDispatch();
+  const selectedTags = useSelector(getSelectedTags);
+  const isSelected = selectedTags.includes(tag);
 
-const TagCard = ({tag, onClick, isSelected}) => {
-  const classes = useStyles();
+  const handleClick = () => {
+    dispatch(toggleTag(tag));
+  };
+
   return (
-    <Card className ={classes.card} onClick ={() => onClick(tag)} elevation={isSelected ? 3 : 1}>
+    <Card 
+      sx={{
+        mb: 2, 
+        backgroundColor: isSelected ? 'secondary.main' : 'background.paper',
+        '&:hover': {
+          backgroundColor: 'primary.light',
+          cursor: 'pointer'
+        }
+      }}
+      onClick={handleClick}
+    >
       <CardActionArea>
-        <CardContent>
-          <Typography>
-            {tag}
-          </Typography>
-        </CardContent>
+        <Typography sx={{ p: 1 }}>
+          {tag}
+        </Typography>
       </CardActionArea>
     </Card>
   );

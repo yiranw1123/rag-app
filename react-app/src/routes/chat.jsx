@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid } from '@mui/material';
+import { Container, Grid, Paper, Typography } from '@mui/material';
 import styled from '@mui/system/styled';
 import ChatNavBar from '../components/chat/navBar.jsx';
 import QuestionForm from '../components/chat/newquestion.jsx';
@@ -7,7 +7,10 @@ import DetailsAccordion from '../components/chat/kbdetailsaccordin.jsx';
 import { useDispatch, useSelector } from 'react-redux';
 import { websocketConnecting, websocketDisconnect } from '../features/webSocketState.js';
 import ChatDisplay from '../components/chat/chatdisplay.jsx';
-import { fetchTags, fetchQuestions } from '../features/questionState.js';
+import { fetchTags } from '../features/tagState.js';
+import{ fetchQuestions } from '../features/questionState.js';
+import QuestionPanel from '../components/chat/questionpanel.jsx';
+import TagPanel from '../components/chat/tagpanel.jsx';
 
 const Chat = () =>{
   const chatId = useSelector(state => state.chat.chatId);
@@ -21,7 +24,7 @@ const Chat = () =>{
   useEffect(() => {
     dispatch(fetchQuestions({chatId}));
     dispatch(fetchTags({chatId}));
-  }, [dispatch]);
+  }, [chatId]);
 
   useEffect(() => {
     if(showQuestionInputForm) {
@@ -48,38 +51,36 @@ const Chat = () =>{
   return(
     <>
       <ChatNavBar onToggleQuestionForm = {toggleQuestionForm}/>
-      <Container style={{ height: 'calc(100vh - 64px)'}} maxWidth={false}>
-      <Grid container spacing={1} style={{ height: '100vh' }}> {/* Full viewport height */}
-        {/* Column for details + prev questions */}
-        <Grid item xs={6}>  
-          <Item>
-            <DetailsAccordion />
-          </Item>
+      <Container maxWidth={false} style={{ height: '100vh', padding: 0 }}>
+      <Grid container spacing={2} style={{ height: '100%' }}>
+        {/* Left Column */}
+        <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column' }}>
+          <Grid item style={{ flex: 1 }}>
+            <DetailsAccordion/>
+          </Grid>
+          <Grid item style={{ flex: 3 }}>
+            <Typography variant="h3">Tags</Typography>
+            <TagPanel/>
+            <Typography variant="h3">Questions</Typography>
+            <QuestionPanel/>
+          </Grid>
         </Grid>
 
-        {/* Column for new question + chat display */}
-        <Grid item xs={6}>
+        {/* Right Column */}
+        <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column' }}>
           <Grid container direction="column" style={{ height: '100%' }}>
-            <Grid item style={{ height: showQuestionInputForm ? '25%' : '0', overflow: 'hidden' }}>
+            <Paper style={{ height: showQuestionInputForm ? '25%' : '0', overflow: 'hidden' }}>
               {showQuestionInputForm && <Item><QuestionForm/></Item>}
-            </Grid>
-            <Grid item style={{
-              flexGrow: 1,
-              border: '1px solid #ccc',  // Light grey border
-              borderRadius: '4px',       // Rounded corners
-              overflow: 'auto',          // Ensures the content is scrollable
-              padding: '20px',           // Adds some padding inside the box
-              backgroundColor: '#f9f9f9', // Light background color
-              height: showQuestionInputForm ? 'calc(75vh - 20px)' : '90vh',            // Sets a fixed height
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)' // Subtle shadow for depth
-            }}>
-              <ChatDisplay/>
-            </Grid>
+            </Paper>
+          </Grid>
+          <Grid item style={{ flex: 1 }}>
+            <Paper style={{ height: '100%', margin: '8px', padding: '16px' }}>
+              <ChatDisplay />
+            </Paper>
           </Grid>
         </Grid>
       </Grid>
-      </Container>
-
+    </Container>
     </>
   );
 };

@@ -1,11 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 export const questionSlice = createSlice({
-  name:"question",
+  name:"questionStore",
   initialState:{
     //Dictionary of list where key is chatId
     questions:[],
-    tags:[],
     filteredQuestions:[],
     selectedQuestion: null,
     isLoading:false
@@ -19,11 +18,12 @@ export const questionSlice = createSlice({
     fetchTags: (state) => {
       state.isLoading = true;
     },
-    setQuestions:(state, payload) => {
+    setQuestions:(state, action) => {
+      const {payload} = action;
       state.questions = payload;
     },
-    setTags:(state, payload) => {
-      state.tags = payload;
+    storeQuestions:() =>{
+
     },
     setSelectedQuestion: (state, payload) => {
       state.selectedQuestion = payload;
@@ -31,8 +31,8 @@ export const questionSlice = createSlice({
     updateSelectedQuestion:() => {
 
     },
-    setFilteredQuestion:(state) => {
-
+    setFilteredQuestion:(state, action) => {
+      state.filteredQuestions = action.payload;
     },
   }
 });
@@ -40,15 +40,12 @@ export const questionSlice = createSlice({
 export const {
   addQuestion,
   updateQuestionWithResponse,
-  fetchQuestions,
-  setQuestions,
+  fetchQuestions, storeQuestions, setQuestions,
   setSelectedQuestion,
   updateSelectedQuestion,
-  setTags,
-  fetchTags
+  setFilteredQuestion
 } = questionSlice.actions;
 export default questionSlice.reducer;
 
-export const selectedQuestion= state => state.question.selectedQuestion;
-export const selectQuestions= state => state.question.questions;
-export const selectTags = state => state.question.tags;
+export const selectedQuestion= state => state.questionStore.selectedQuestion;
+export const selectQuestions= state => state.questionStore.questions;

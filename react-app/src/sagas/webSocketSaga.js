@@ -85,7 +85,7 @@ function* watchSendMessage(socket){
 function* webSocketSaga(){
     while (true){
         const {payload} = yield take('websocket/websocketConnecting');
-        const chatId = payload.chatId.id;
+        const {chatId} = payload;
         if(chatId){
             const socket = yield call(initializeWebSocket, chatId);
             const task = yield fork(createConnection, socket);

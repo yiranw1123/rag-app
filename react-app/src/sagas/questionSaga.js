@@ -1,14 +1,15 @@
 import { takeEvery, select, put, call } from "redux-saga/effects";
 import { fetchChatHistoryById } from "../api";
-import { selectedQuestion, setQuestions, setSelectedQuestion, updateSelectedQuestion } from "../features/questionState";
+import { selectedQuestion, setQuestions, setSelectedQuestion, storeQuestions, updateSelectedQuestion } from "../features/questionState";
 import {clientDb} from '../db/clientDb';
 import { selectChatId } from "../features/chatState";
+import Dexie from "dexie";
 
 function* handleAddQuestion(action) {
   const {id, question} = action.payload;
   const chatId = yield select(selectChatId);
   const newQuestionData = {
-    chatId: chatId.id,
+    chatId: chatId,
     questionId: id,
     question: question,
     answer:'',
@@ -25,7 +26,6 @@ function* handleAddQuestion(action) {
 
 function* handleUpdateQuestionResponse(action){
   const {id, chat_id, answer, sources, tags, timestamp} = action.payload;
-  //const chatId = yield select(selectChatId);
   const key = [chat_id, id];
   const currMessage = yield clientDb.questionHistory
     .where('[chatId+questionId]')
@@ -59,17 +59,64 @@ function* handleFetchQuestion(action){
   try{
     const questions = yield call(fetchChatHistoryById, chatId);
     // Write fetched questions to IndexedDB
-    //yield call([clientDb.questionHistory, 'bulkPut'], questions); 
     yield put(setQuestions(questions));
+    yield put(storeQuestions(questions));
+
   } catch (error){
     console.log("Error fetching questions..", error);
   }
 }
 
+function prepareRecord(jsonObject) {
+  const tagNames = jsonObject.tags.map(tag => tag.text);
+
+  return {
+    chatId: jsonObject.chat_id,
+    questionId: jsonObject.id,
+    question: jsonObject.question,
+    answer: jsonObject.answer,
+    sources: JSON.stringify(jsonObject.sources),  // Serialize complex nested objects
+    tags: tagNames
+  };
+}
+
+function* storeQuestionsToIndexDB(action){
+  const questions = action.payload;
+  const records = questions.map(prepareRecord);
+  try {
+    const existingQuestions = yield clientDb.questionHistory
+                              .where('questionId')
+                              .anyOf(records.map(r => r.questionId))
+                              .toArray();
+    
+    // Create a Set of existing question IDs for quick lookup
+    const existingQuestionIds = new Set(existingQuestions.map(q => q.questionId));
+
+    // Filter out records that are already in the database
+    const newRecords = records.filter(record => !existingQuestionIds.has(record.questionId));
+
+    if(newRecords.length){
+      // Use call effect for better testability and control over async operations
+      yield call(() =>
+        clientDb.transaction('rw', clientDb.questionHistory, async () => {
+          await clientDb.questionHistory.bulkAdd(newRecords);
+        }));
+        console.log("Records added successfully!");
+    }
+  } catch (e) {
+    if (e instanceof Dexie.BulkError) {
+      console.error("Some records failed to add:", e.failures);
+    } else {
+      console.error("Failed to store data in IndexedDB:", e);
+    }
+  }
+}
+
 function* questionSaga(){
-  yield takeEvery('question/addQuestion', handleAddQuestion);
-  yield takeEvery('question/updateQuestionWithResponse', handleUpdateQuestionResponse);
-  yield takeEvery('question/fetchQuestions', handleFetchQuestion);
+  yield takeEvery('questionStore/addQuestion', handleAddQuestion);
+  yield takeEvery('questionStore/updateQuestionWithResponse', handleUpdateQuestionResponse);
+  yield takeEvery('questionStore/fetchQuestions', handleFetchQuestion);
+  yield takeEvery('questionStore/storeQuestions', storeQuestionsToIndexDB);
 }
   
 export default questionSaga;

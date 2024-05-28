@@ -16,7 +16,7 @@ export const chatSlice = createSlice({
       state.selectedKB = action.payload;
     },
     setChatId:(state, action) => {
-      state.chatId = action.payload;
+      state.chatId = action.payload.id;
     },
     fetchFilesList:(state) => {
       state.isLoading = true;
