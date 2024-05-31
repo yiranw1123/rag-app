@@ -37,19 +37,12 @@ const CreateKBForm = ({onFormSubmit})=> {
     const createKBData = new FormData();
     
     Object.entries(form).forEach(([key, value]) => {
-      console.log(`Appending form field: ${key}: ${value}`); 
       createKBData.append(key, value);
     });
 
     files.forEach((file, index) => {
       createKBData.append('files', file);
     });
-
-    // Log formData entries
-    for (let pair of createKBData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
-    }
-    
     
     try{
       await CreateKBandUploadFile(createKBData);

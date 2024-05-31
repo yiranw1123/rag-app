@@ -36,6 +36,7 @@ const App = () => {
     await deleteKB(kbId);
     try{
       await fetchKnowledgebase();
+      console.log("Successfully removed knowledgebase ", kbId);
     }catch (error) {
       console.error("Error fetching kB data:", error);
     }

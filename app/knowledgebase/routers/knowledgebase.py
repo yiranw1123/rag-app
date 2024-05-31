@@ -58,7 +58,6 @@ async def delete(id: int, db: AsyncSession=Depends(get_db), chroma_client = Depe
     files = await knowledgebasefile.get_by_kbid(id, db)
     file_ids = [file.id for file in files]
     chunk_ids = [file.chunks for file in files]
-    assert(len(chunk_ids) ==  len(files))
     # delete from redis
     await handle_multiple_file_delete_in_redis(id, file_ids)
     await knowledgebase.delete(id, db)

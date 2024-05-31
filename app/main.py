@@ -15,19 +15,13 @@ logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(leve
 
 async def onStart(app: FastAPI):
     load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
-    print(os.getenv("ENVIRONMENT"))
-    if os.getenv("ENVIRONMENT") == "development":
-        await init_db()
-    else:
-        # Run Alembic migrations to ensure the database is up to date
-        alembic_cfg = Config("alembic.ini")
-        command.upgrade(alembic_cfg, "head")
+    await init_db()
 
     app.state.chroma = chromadb.HttpClient(host="localhost", port=8080)
 
 async def init_db():
     async with engine.begin() as conn:
-        #await conn.run_sync(models.Base.metadata.drop_all)
+        await conn.run_sync(models.Base.metadata.drop_all)
         await conn.run_sync(models.Base.metadata.create_all)
 
 async def onShutdown(app:FastAPI):

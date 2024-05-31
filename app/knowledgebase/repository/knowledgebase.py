@@ -38,3 +38,4 @@ async def delete(id: int, db:AsyncSession):
                             detail= f"KnowledgeBase with id {id} is not found")
     await db.delete(kb)
     await db.flush()
+    await db.commit()
