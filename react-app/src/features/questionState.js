@@ -30,9 +30,10 @@ export const questionSlice = createSlice({
       const {payload} = action;
       state.questions = payload;
     },
-    storeQuestions:() =>{
-
+    clearQuestions:(state) => {
+      state.questions = [];
     },
+    storeQuestions:() =>{},
     setSelectedQuestion: (state, payload) => {
       state.selectedQuestion = payload;
     },
@@ -45,7 +46,7 @@ export const questionSlice = createSlice({
 export const {
   addQuestion, addQuestionSuccess,
   updateQuestionWithResponse,updateQuestionSuccess,
-  fetchQuestions, storeQuestions, setQuestions,
+  fetchQuestions, storeQuestions, setQuestions, clearQuestions,
   setSelectedQuestion,
   updateSelectedQuestion,
   setFilteredQuestions

@@ -1,10 +1,13 @@
-import { useSelector } from "react-redux";
-import { selectedQuestion } from "../../features/questionState";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchQuestions, selectedQuestion } from "../../features/questionState";
 import styles from "./ChatDisplay.module.css";
 import { useState, useEffect } from "react";
+import { selectChatId } from "../../features/chatState";
 
 const ChatDisplay = () => {
+  const dispatch = useDispatch();
   const selectedQuestionState = useSelector(selectedQuestion);
+  const chatId = useSelector(selectChatId);
   const[sources, setSources] = useState([]);
   const [expandedSources, setExpandedSources] = useState({});
 
@@ -17,10 +20,14 @@ const ChatDisplay = () => {
   };
 
   useEffect(() => {
+    dispatch(fetchQuestions({chatId}));
+  }, [chatId]);
+
+  useEffect(() => {
     if (selectedQuestionState?.payload?.sources) {
       try {
-        const parsedSources = JSON.parse(selectedQuestionState.payload.sources);
-        setSources(parsedSources.documents);
+        const {documents} = selectedQuestionState.payload.sources;
+        setSources(documents);
       } catch (error) {
         console.error("Failed to parse sources", error);
         setSources([]);
@@ -43,9 +50,14 @@ const ChatDisplay = () => {
       <div className={`${styles.messageContent} ${styles.question}`}>
           {questionToDisplay?.question}
       </div>
-      <div className={`${styles.messageContent} ${styles.answer}`}>
-          {questionToDisplay?.answer}
-      </div>
+      {questionToDisplay?.answer?.trim() && (
+        <div className={`${styles.messageContent} ${styles.answer}`}>
+          {questionToDisplay.answer}
+        </div>
+      )
+}
+
+
 
       {sources && (
         <div className={styles.sourcesGrid}>

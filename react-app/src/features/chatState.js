@@ -7,8 +7,6 @@ export const chatSlice = createSlice({
     chatId: null,
     kbFiles:[],
     isLoading: false,
-    tags:[],
-    selectedTags:[],
     error: null
   },
   reducers:{

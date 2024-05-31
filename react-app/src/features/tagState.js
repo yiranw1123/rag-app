@@ -16,6 +16,9 @@ export const tagSlice = createSlice({
       const {payload} = action;
       state.tags = payload;
     },
+    resetTags: (state) => {
+      state.tags = [];
+    },
     toggleTag: (state, action) => {
 
     },
@@ -28,7 +31,7 @@ export const tagSlice = createSlice({
 });
 
 export const {
-  setTags,
+  setTags, resetTags,
   fetchTags,
   toggleTag,
   setSelectedTags

@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 
 const QuestionPanel = () =>{
   const questions = useSelector(selectQuestions);
+
   const dispatch = useDispatch();
   const options = {
     weekday: 'short', // "Thu"

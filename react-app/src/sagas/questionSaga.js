@@ -1,6 +1,6 @@
 import { takeEvery, select, put, call } from "redux-saga/effects";
 import { fetchChatHistoryById } from "../api";
-import { selectedQuestion, setQuestions, setSelectedQuestion, storeQuestions, addQuestionSuccess, updateQuestionSuccess } from "../features/questionState";
+import { selectedQuestion, setQuestions, setSelectedQuestion, storeQuestions, addQuestionSuccess, updateQuestionSuccess, clearQuestions } from "../features/questionState";
 import {clientDb} from '../db/clientDb';
 import { selectChatId } from "../features/chatState";
 import Dexie from "dexie";
@@ -27,7 +27,7 @@ function* handleAddQuestion(action) {
 }
 
 function* handleUpdateQuestionResponse(action){
-  const {id, chat_id, answer, sources, tags_list, timestamp} = action.payload;
+  const {id, chat_id, answer, sources, tags_list} = action.payload;
   const parsed_tags_list = JSON.parse(tags_list);
   const tags = parsed_tags_list.map(tag => tag.text);
   const key = [chat_id, id];

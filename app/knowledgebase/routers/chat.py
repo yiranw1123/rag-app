@@ -49,7 +49,7 @@ async def get_by_id(id: uuid.UUID, db: AsyncSession= Depends(get_db)):
 @cached(cache = LRUCache(maxsize=32))
 @router.get('/history/{chat_id}')
 async def fetch_chat_history(chat_id = str, db: AsyncSession= Depends(get_db)):
-    history = await chat.fetch_history_by_id(chat_id, db)
+    history = await chat.fetch_history_by_id(uuid.UUID(chat_id), db)
     return history
 
 # id is the uuid for chat session with kb_id

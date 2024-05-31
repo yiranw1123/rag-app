@@ -8,6 +8,8 @@ import { createChat } from "../api";
 import { setChatId, setSelectedKB } from "../features/chatState";
 import { useDispatch } from "react-redux";
 import {fetchFilesList} from '../features/chatState';
+import { resetTags } from "../features/tagState";
+import { clearQuestions } from "../features/questionState";
 
 const KBTable = ({data, rowsPerPage, onView, onDelete}) => {
   const dispatch = useDispatch();
@@ -19,6 +21,8 @@ const KBTable = ({data, rowsPerPage, onView, onDelete}) => {
   const goToChat = async (knowledgebase) =>{
     // kb name, description
     dispatch(setSelectedKB(knowledgebase));
+    dispatch(resetTags());
+    dispatch(clearQuestions());
     const kbId = knowledgebase.id;
     //fetch files list
     dispatch(fetchFilesList(kbId));
