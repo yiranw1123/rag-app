@@ -8,12 +8,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { websocketConnecting, websocketDisconnect } from '../features/webSocketState.js';
 import ChatDisplay from '../components/chat/chatdisplay.jsx';
 import { fetchTags } from '../features/tagState.js';
-import{ fetchQuestions } from '../features/questionState.js';
+import{ fetchQuestions, getLastAdded, getLastUpdated } from '../features/questionState.js';
 import QuestionPanel from '../components/chat/questionpanel.jsx';
 import TagPanel from '../components/chat/tagpanel.jsx';
 
 const Chat = () =>{
   const chatId = useSelector(state => state.chat.chatId);
+  const lastUpdated = useSelector(getLastUpdated);
+  const lastAdded = useSelector(getLastAdded);
   const [showQuestionInputForm, setShowQuestionInputForm] = useState(false);
   const dispatch = useDispatch();
 
@@ -24,7 +26,7 @@ const Chat = () =>{
   useEffect(() => {
     dispatch(fetchQuestions({chatId}));
     dispatch(fetchTags({chatId}));
-  }, [chatId]);
+  }, [chatId, lastAdded, lastUpdated]);
 
   useEffect(() => {
     if(showQuestionInputForm) {
@@ -57,8 +59,6 @@ const Chat = () =>{
         <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column' }}>
           <Grid item style={{ flex: 1 }}>
             <DetailsAccordion/>
-          </Grid>
-          <Grid item style={{ flex: 3 }}>
             <Typography variant="h3">Tags</Typography>
             <TagPanel/>
             <Typography variant="h3">Questions</Typography>
@@ -68,11 +68,9 @@ const Chat = () =>{
 
         {/* Right Column */}
         <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column' }}>
-          <Grid container direction="column" style={{ height: '100%' }}>
-            <Paper style={{ height: showQuestionInputForm ? '25%' : '0', overflow: 'hidden' }}>
-              {showQuestionInputForm && <Item><QuestionForm/></Item>}
-            </Paper>
-          </Grid>
+          <Paper style={{ height: showQuestionInputForm ? '25%' : '0', overflow: 'hidden' }}>
+            {showQuestionInputForm && <Item><QuestionForm/></Item>}
+          </Paper>
           <Grid item style={{ flex: 1 }}>
             <Paper style={{ height: '100%', margin: '8px', padding: '16px' }}>
               <ChatDisplay />

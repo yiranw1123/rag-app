@@ -21,6 +21,12 @@ const TagCard = ({ tag }) => {
           cursor: 'pointer'
         }
       }}
+      style={{
+        margin: '2px',  // Add more space around each card if needed
+        padding: '3px', // Ensure internal padding doesn't affect layout
+        border: '1px solid #ccc', // Example border for visual separation
+        borderRadius: '5px'  // Optional for aesthetic
+      }}
       onClick={handleClick}
     >
       <CardActionArea>

@@ -7,11 +7,19 @@ export const questionSlice = createSlice({
     questions:[],
     filteredQuestions:[],
     selectedQuestion: null,
-    isLoading:false
+    isLoading:false,
+    lastAdded:null,
+    lastUpdated: null
   },
   reducers:{
     addQuestion:() => {},
     updateQuestionWithResponse:() =>{},
+    addQuestionSuccess:(state) => {
+      state.lastAdded = new Date().getTime();
+    },
+    updateQuestionSuccess:(state) => {
+      state.lastUpdated = new Date().getTime();
+    },
     fetchQuestions: (state) => {
       state.isLoading = true;
     },
@@ -28,24 +36,28 @@ export const questionSlice = createSlice({
     setSelectedQuestion: (state, payload) => {
       state.selectedQuestion = payload;
     },
-    updateSelectedQuestion:() => {
-
-    },
-    setFilteredQuestion:(state, action) => {
+    setFilteredQuestions:(state, action) => {
       state.filteredQuestions = action.payload;
     },
   }
 });
 
 export const {
-  addQuestion,
-  updateQuestionWithResponse,
+  addQuestion, addQuestionSuccess,
+  updateQuestionWithResponse,updateQuestionSuccess,
   fetchQuestions, storeQuestions, setQuestions,
   setSelectedQuestion,
   updateSelectedQuestion,
-  setFilteredQuestion
+  setFilteredQuestions
 } = questionSlice.actions;
 export default questionSlice.reducer;
 
 export const selectedQuestion= state => state.questionStore.selectedQuestion;
-export const selectQuestions= state => state.questionStore.questions;
+export const selectQuestions = state => {
+  const { filteredQuestions, questions } = state.questionStore;
+  // Check if filteredQuestions is not empty, if so, return it; otherwise, return all questions.
+  return filteredQuestions.length > 0 ? filteredQuestions : questions;
+};
+
+export const getLastUpdated = state => state.questionStore.lastUpdated;
+export const getLastAdded = state => state.questionStore.lastAdded;

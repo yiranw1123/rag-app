@@ -1,7 +1,7 @@
 import { takeEvery, select, put, call } from "redux-saga/effects";
 import { clientDb } from "../db/clientDb";
 import { setTags, getSelectedTags, setSelectedTags } from "../features/tagState";
-import { selectQuestions } from "../features/questionState";
+import { selectQuestions, setFilteredQuestions } from "../features/questionState";
 
 function* fetchTags(action){
   const {chatId} = action.payload;
@@ -35,9 +35,10 @@ function* handleToggleTag(action){
   // Filter questions based on new selected tags
   if (newSelectedTags.length > 0) {
     const questions = yield select(selectQuestions);
-    const filtered = questions.filter(question =>
-      newSelectedTags.every(tag => question.tags && question.tags.includes(tag))
-    );
+  // Assume 'questions' is your array of question objects
+  const filtered = questions.filter(question =>
+    question.tags.some(tag => newSelectedTags.includes(tag.text))
+  );
     yield put(setFilteredQuestions(filtered));
   } else {
     // If no tags are selected, clear the filtered questions

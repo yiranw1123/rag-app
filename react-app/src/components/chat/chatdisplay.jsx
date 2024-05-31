@@ -58,7 +58,7 @@ const ChatDisplay = () => {
         </div>
         )
       }
-</div>
+    </div>
   );
 };
 export default ChatDisplay;
