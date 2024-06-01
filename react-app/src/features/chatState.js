@@ -40,3 +40,4 @@ export const {
 export default chatSlice.reducer;
 
 export const selectChatId = state => state.chat.chatId;
+export const selectedKbName = state =>  state.chat.selectedKB.name;

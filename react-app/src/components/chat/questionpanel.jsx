@@ -24,7 +24,7 @@ const QuestionPanel = () =>{
 
   return(
     <Paper>
-      <div style={{ maxHeight: '50vh', overflowY: 'auto' }}>
+      <div style={{ maxHeight: '50vh', minHeight:'30vh', overflowY: 'auto' }}>
         <Grid item xs={12} sm={8}>
           <List>
             {questions.map((item, index) => (

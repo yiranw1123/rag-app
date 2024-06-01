@@ -7,7 +7,7 @@ const TagPanel = () => {
   const tags = useSelector(selectTags);  // Assuming you're fetching tags like this
   return (
     <Paper>
-      <div style={{ maxHeight: '50vh', overflowY: 'auto', padding:'2px' }}>
+      <div style={{ maxHeight: '50vh', minHeight:'30vh', overflowY: 'auto', padding:'2px' }}>
         <Grid container spacing={2}>
         {tags.map((tag, index) => (
           <Grid item key={index}>

@@ -11,6 +11,15 @@ import { fetchTags } from '../features/tagState.js';
 import{ fetchQuestions, getLastAdded, getLastUpdated } from '../features/questionState.js';
 import QuestionPanel from '../components/chat/questionpanel.jsx';
 import TagPanel from '../components/chat/tagpanel.jsx';
+import {createTheme, ThemeProvider } from '@mui/material';
+
+// Create a custom theme.
+const theme = createTheme({
+  typography: {
+    fontFamily: 'monospace',  // This sets the font-family globally for all text in Material-UI components
+    fontSize: 15,  // You can also set the base font size here
+  },
+});
 
 const Chat = () =>{
   const chatId = useSelector(state => state.chat.chatId);
@@ -51,17 +60,18 @@ const Chat = () =>{
   }));
 
   return(
-    <>
+    <ThemeProvider theme={theme}>
       <ChatNavBar onToggleQuestionForm = {toggleQuestionForm}/>
       <Container maxWidth={false} style={{ height: '100vh', padding: 0 }}>
       <Grid container spacing={2} style={{ height: '100%' }}>
         {/* Left Column */}
         <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column' }}>
           <Grid item style={{ flex: 1 }}>
+            <Typography variant="h4">KnowledgeBase</Typography>
             <DetailsAccordion/>
-            <Typography variant="h3">Tags</Typography>
+            <Typography variant="h4">Tags</Typography>
             <TagPanel/>
-            <Typography variant="h3">Questions</Typography>
+            <Typography variant="h4">Questions</Typography>
             <QuestionPanel/>
           </Grid>
         </Grid>
@@ -79,7 +89,7 @@ const Chat = () =>{
         </Grid>
       </Grid>
     </Container>
-    </>
+    </ThemeProvider>
   );
 };
 
