@@ -42,3 +42,4 @@ async def delete(id: int, db:AsyncSession):
 
     await db.delete(file)
     await db.flush()
+    await db.commit()

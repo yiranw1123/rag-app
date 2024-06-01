@@ -12,7 +12,6 @@ from ..store.RedisStore import RedisStore
 from ..store.utils.RedisStoreUtils import handle_file_delete_in_redis
 import logging
 from langchain.docstore.document import Document
-import asyncio
 
 
 logger = logging.getLogger(__name__)
@@ -24,21 +23,6 @@ async def handle_file_uploads(kb_id, files: List[UploadFile], db, chroma, summar
         if not kb_exists:
             raise ValueError("KnowledgeBase ID does not exist")
         
-        # tasks = [
-        #     upload_single_file(kb_id, file, db, chroma, summarize_chain) for file in files
-        # ]
-        # results = await asyncio.gather(*tasks, return_exceptions=True)
-
-        # # Handle the results and process exceptions if any
-        # for result in results:
-        #     if isinstance(result, Exception):
-        #         raise result
-        #     else:
-        #         processed.append(str(result))
-        #         print(f"Successfully processed file with ID {result}")
-        
-        # #  If all files uploaded successfully, flush all file records at once
-        # await db.flush()
         for file in files:
             file_id = await upload_single_file(kb_id, file, db, chroma, summarize_chain)
             processed.append(str(file_id))
@@ -75,6 +59,8 @@ async def upload_single_file(id, file:UploadFile, db, chroma, summarize_chain):
 
     await clear_img_dir(file_id=file_id)
     await clear_file_dir(file_id=file_id)
+
+    await db.commit()
 
     return file_id
 

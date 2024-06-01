@@ -35,10 +35,10 @@ async def create(knowledgebase_name: str = Form(...), description: Optional[str]
         return schemas.CreatedKBID(kb_id=kb_id)
 
 @router.post('/{kb_id}/upload/', status_code=status.HTTP_201_CREATED)
-async def upload_files(kb_id: Optional[int] = None, files: List[UploadFile] = File(...),
+async def upload_files(kb_id: int, files: List[UploadFile] = File(...),
                                     db: AsyncSession= Depends(get_db), chroma=Depends(get_chroma),
                                     summarize_chain=Depends(get_summarizer_chain)):
-    pass
+    await handle_file_uploads(kb_id=kb_id, files=files, db=db, chroma=chroma, summarize_chain=summarize_chain)
 
 @router.get('/{id}/files/', status_code=status.HTTP_200_OK, response_model=List[schemas.ShowKnowledgeBaseFile])
 async def get_by_knowledgebase_id(id: int, db: AsyncSession= Depends(get_db)):

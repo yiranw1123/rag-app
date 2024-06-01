@@ -1,5 +1,5 @@
 import React, {useRef, useState} from 'react';
-import {CreateKBandUploadFile} from '../api';
+import { uploadFile } from '../api';
 
 const UploadFileForm = ({data, onFormSubmit, jumpToDetails}) => {
   const [selectedKB, setSelectedKB] = useState("");
@@ -39,7 +39,7 @@ const UploadFileForm = ({data, onFormSubmit, jumpToDetails}) => {
     setIsUploading(true);
 
     try{
-      await CreateKBandUploadFile(kbId, filesData);
+      await uploadFile(kbId, filesData);
     } catch (error) {
       console.error("Error uploading files: ", error);
       throw error;
